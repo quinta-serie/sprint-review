@@ -1,0 +1,39 @@
+// GRID
+@mixin grid($gap: 0, $grid-columns: 12, $grid-rows: 1) {
+    width: 100%;
+    display: grid;
+    gap: $gap;
+    display: -ms-grid;
+    position: relative;
+    grid-template-rows: $grid-rows;
+    grid-template-columns: repeat($grid-columns, 1fr);
+    -ms-grid-columns: unquote(repeater("1fr ", $grid-columns));
+}
+
+@mixin grid-column-start($cols) {
+    -ms-grid-column: $cols;
+    grid-column-start: $cols;
+}
+
+@mixin grid-column-span($cols: $columns) {
+    grid-column-end: span $cols;
+    -ms-grid-column-span: $cols;
+}
+
+@mixin grid-row-start($rows) {
+    -ms-grid-row: $rows;
+    grid-row-start: $rows;
+}
+
+// MEDIA QUERY
+@mixin for-large {
+    @media only screen and (min-width: 1600px) {
+        @content;
+    }
+}
+
+@mixin for-medium {
+    @media only screen and (max-width: 600px) {
+        @content;
+    }
+}

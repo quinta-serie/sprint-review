@@ -1,0 +1,38 @@
+{
+  "name": "@sprint-review/client",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "start:qa": "env-cmd -f .env.qa vite --port 5000",
+    "start:prod": "env-cmd -f .env.prod vite --port 5000",
+    "start:test": "env-cmd -f .env.test vite --port 5000",
+    "start:local": "env-cmd -f .env.local vite --port 5000",
+    "build:prod": "tsc && env-cmd -f .env.prod vite build",
+    "build:qa": "tsc && VITE_THEME=zap env-cmd -f .env.qa vite build",
+    "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-gtm-module": "^2.0.11",
+    "react-router-dom": "^6.23.1",
+    "react-shadow": "^20.4.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@types/react-gtm-module": "^2.0.3",
+    "@typescript-eslint/eslint-plugin": "^7.10.0",
+    "@typescript-eslint/parser": "^7.10.0",
+    "@vitejs/plugin-react": "^4.3.0",
+    "env-cmd": "^10.1.0",
+    "eslint": "^9.3.0",
+    "eslint-plugin-react-hooks": "^4.6.2",
+    "eslint-plugin-react-refresh": "^0.4.7",
+    "sass": "^1.77.2",
+    "typescript": "^5.4.5",
+    "vite": "^5.2.11"
+  }
+}
