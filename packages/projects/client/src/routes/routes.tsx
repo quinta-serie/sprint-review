@@ -1,7 +1,8 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 
 import App from '@/App';
-import Signin from '@/pages/auth/Signin';
+import Signin from '@/pages/Signin';
+import Boards from '@/pages/Boards';
 
 import { UserLoggedGuard } from './LoggedOutGuard';
 
@@ -18,6 +19,16 @@ export const router = createBrowserRouter([
                 <App />
             </UserLoggedGuard>
         ),
+        children: [
+            {
+                path: '',
+                element: <Navigate to="/boards" replace={true} />,
+            },
+            {
+                path: '/boards',
+                element: <Boards />,
+            }
+        ]
     },
     {
         path: 'auth',

@@ -16,7 +16,7 @@ export default defineConfig({
         }
     },
     server: {
-        host: 'dev-meuzap.zapimoveis.com.br',
+        host: 'local.sprint-retro.com.br',
     },
     css: {
         preprocessorOptions: {

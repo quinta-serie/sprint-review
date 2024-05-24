@@ -1,0 +1,1 @@
+export { getParams, getDomain, getPage } from './url';
