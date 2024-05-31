@@ -16,7 +16,7 @@ export default defineConfig({
         }
     },
     server: {
-        host: 'local.sprint-retro.com.br',
+        host: true,
     },
     css: {
         preprocessorOptions: {
