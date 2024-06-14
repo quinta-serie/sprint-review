@@ -1774,9 +1774,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@sprint-review/lint@workspace:packages/shared/lint":
+"@sprint-review/lint@workspace:packages/shared/config/lint":
   version: 0.0.0-use.local
-  resolution: "@sprint-review/lint@workspace:packages/shared/lint"
+  resolution: "@sprint-review/lint@workspace:packages/shared/config/lint"
   dependencies:
     "@typescript-eslint/eslint-plugin": ^7.10.0
     "@typescript-eslint/parser": ^7.10.0
