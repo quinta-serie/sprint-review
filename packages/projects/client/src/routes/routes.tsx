@@ -1,8 +1,11 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 
 import App from '@/App';
+import Home from '@/pages/Home';
+import Teams from '@/pages/Teams';
 import Signin from '@/pages/Signin';
 import Boards from '@/pages/Boards';
+import Account from '@/pages/Account';
 
 import { UserLoggedGuard } from './LoggedOutGuard';
 
@@ -22,11 +25,23 @@ export const router = createBrowserRouter([
         children: [
             {
                 path: '',
-                element: <Navigate to="/boards" replace={true} />,
+                element: <Navigate to="/home" replace={true} />,
+            },
+            {
+                path: '/home',
+                element: <Home />,
             },
             {
                 path: '/boards',
                 element: <Boards />,
+            },
+            {
+                path: '/teams',
+                element: <Teams />,
+            },
+            {
+                path: '/my-account',
+                element: <Account />,
             }
         ]
     },
