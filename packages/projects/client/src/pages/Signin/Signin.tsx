@@ -9,18 +9,15 @@ import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import CardContent from '@mui/material/CardContent';
 import GoogleIcon from '@mui/icons-material/Google';
-import LightModeIcon from '@mui/icons-material/LightMode';
-import DarkModeIcon from '@mui/icons-material/DarkMode';
 
 import { auth } from '@/services/core';
-import IconButton from '@mui/material/IconButton';
 
 export default function Signin() {
     const navigate = useNavigate();
 
     const signinWithGoogle = () => {
         auth.login()
-            .then(() => { navigate('/boards') });
+            .then(() => { navigate('/dashboard') });
     }
 
     return (
