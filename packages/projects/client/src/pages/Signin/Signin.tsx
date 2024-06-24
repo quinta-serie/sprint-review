@@ -8,17 +8,35 @@ import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import CardContent from '@mui/material/CardContent';
+
 import GoogleIcon from '@mui/icons-material/Google';
 
-import { auth } from '@/services/core';
+import { auth, user } from '@/services/core';
 
 export default function Signin() {
     const navigate = useNavigate();
 
+    const redirect = () => { navigate('/home'); };
+
     const signinWithGoogle = () => {
         auth.login()
-            .then(() => { navigate('/dashboard') });
-    }
+            .then(() => { verifyUser(redirect); });
+    };
+
+    const verifyUser = (redirect: () => void) => {
+        const { email } = user.current;
+
+        user.getUserByEmail(email)
+            .then(current => {
+                if (current) {
+                    redirect();
+                    return;
+                }
+
+                user.createUser()
+                    .then(() => redirect());
+            });
+    };
 
     return (
         <Box sx={{
