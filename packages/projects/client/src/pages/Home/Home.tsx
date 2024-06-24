@@ -37,7 +37,7 @@ function TemplateCards(template: HotTemplates<State>) {
                 sx={{
                     height: '90%',
                     transition: 'all 0.3s',
-                    border: (theme) => `1px solid ${theme.palette.grey[400]}`,
+                    border: (theme) => `1px solid ${theme.palette.grey[300]}`,
                 }}
             >
                 <CardActionArea sx={{ height: '100%' }}>
@@ -69,7 +69,7 @@ function CreateRetroCard() {
             <Typography variant="h5">
                 Criar retrô
             </Typography>
-            <Card elevation={0}>
+            <Card elevation={0} sx={{ border: (theme) => `1px solid ${theme.palette.grey[300]}` }}>
                 <CardContent>
                     <Typography variant="h6" gutterBottom>
                         Templates recomendados
@@ -78,7 +78,11 @@ function CreateRetroCard() {
                         <Grid container spacing={2}>
                             {
                                 hotTemplates.map((ht, index) => (
-                                    <Zoom in style={{ transitionDelay: `${100 * (index + 1)}ms` }}>
+                                    <Zoom
+                                        in
+                                        key={ht.name}
+                                        style={{ transitionDelay: `${100 * (index + 1)}ms` }}
+                                    >
                                         <Grid key={ht.name} item xs={6} md={4} lg={3}>
                                             <TemplateCards {...ht} />
                                         </Grid>
@@ -105,7 +109,7 @@ function RecentRetros() {
                         <Card
                             elevation={0}
                             sx={{
-                                border: (theme) => `1px solid ${theme.palette.grey[400]}`,
+                                border: (theme) => `1px solid ${theme.palette.grey[300]}`,
                             }}
                         >
                             <CardActionArea>
