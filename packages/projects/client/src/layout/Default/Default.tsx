@@ -100,7 +100,7 @@ const WithOutChildren = ({ btn, goTo, disablePadding = true }: IButtonDetail & {
 
     const deactiveColor = palette.common.white;
     const activeColor = palette.secondary.light;
-    const matchPath = location.pathname === btn.path;
+    const matchPath = location.pathname.includes(btn.path);
 
     return (
         <ListItem
@@ -110,8 +110,7 @@ const WithOutChildren = ({ btn, goTo, disablePadding = true }: IButtonDetail & {
         >
             <ListItemButton onClick={() => goTo(btn.path, btn.internal)} sx={{ paddingLeft: disablePadding ? 2 : 4 }}>
                 <ListItemIcon sx={{
-                    color: location.pathname === btn.path
-                        ? activeColor : deactiveColor
+                    color: matchPath ? activeColor : deactiveColor
                 }}>
                     {btn.icon}
                 </ListItemIcon>
