@@ -158,8 +158,8 @@ function DeleteMemberModal({ open, selectedMember, onClose }: DeleteMemberModalP
     );
 }
 
-interface MembersTableProps { onSelect: (user: UserData) => void; }
-function MembersTable({ onSelect }: MembersTableProps) {
+interface TableMembersProps { onSelect: (user: UserData) => void; }
+function TableMembers({ onSelect }: TableMembersProps) {
     const { selectedTeam } = useTeams();
 
     return (
@@ -188,6 +188,14 @@ function MembersTable({ onSelect }: MembersTableProps) {
     );
 }
 
+function TableLoading() {
+    return (
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 200 }}>
+            <CircularProgress />
+        </Box>
+    );
+}
+
 export default function Members() {
     const { loading } = useTeams();
     const [open, setOpen] = useState(false);
@@ -205,8 +213,8 @@ export default function Members() {
             <Box>
                 {
                     loading
-                        ? 'loading...'
-                        : <MembersTable onSelect={handleSelectUser} />
+                        ? <TableLoading />
+                        : <TableMembers onSelect={handleSelectUser} />
                 }
                 <DeleteMemberModal
                     open={open}

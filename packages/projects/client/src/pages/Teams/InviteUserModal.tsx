@@ -1,4 +1,4 @@
-import { useState, forwardRef } from 'react';
+import { useState, forwardRef, useEffect } from 'react';
 
 import { enqueueSnackbar } from 'notistack';
 
@@ -49,6 +49,8 @@ export default function InviteUserModal({ teamSelected, open, onClose }: InviteU
 
     useKey({ Enter: () => { addEmail(); } }, [input]);
 
+    useEffect(() => { if (!open) { setEmails([]); } }, [open]);
+
     const addEmail = () => {
         const { value } = input;
 
@@ -76,23 +78,25 @@ export default function InviteUserModal({ teamSelected, open, onClose }: InviteU
     };
 
     const handleAddMembers = () => {
-        setLoading(true);
-
         if (!emails.length) {
             setInput(prev => ({ ...prev, error: 'Você precisa adicionar emails para enviar um convite' }));
             return;
         }
 
-        Promise.all(
-            emails.map(email => invite.sendInvite({ email, accepted: false, teamId: teamSelected.id }))
-        )
-            .then(() => {
-                enqueueSnackbar('Convites enviados com sucesso!', { variant: 'success' });
+        setLoading(true);
+
+        const promiseArr = emails.map(email =>
+            invite.sendInvite({
+                email,
+                status: 'sent',
+                teamId: teamSelected.id,
+                createdAt: new Date().toLocaleString()
             })
-            .catch((e) => {
-                console.log('error', e);
-                enqueueSnackbar('Oops! Tivemos um problema ao enviar os convites', { variant: 'error' });
-            })
+        );
+
+        Promise.all(promiseArr)
+            .then(() => { enqueueSnackbar('Convites enviados com sucesso!', { variant: 'success' }); })
+            .catch(() => { enqueueSnackbar('Oops! Tivemos um problema ao enviar os convites', { variant: 'error' }); })
             .finally(() => {
                 setLoading(false);
                 onClose();

@@ -8,14 +8,15 @@ import Tabs from '@mui/material/Tabs';
 import GroupsIcon from '@mui/icons-material/Groups';
 import SettingsIcon from '@mui/icons-material/Settings';
 import DashboardIcon from '@mui/icons-material/Dashboard';
+import LocalPostOfficeIcon from '@mui/icons-material/LocalPostOffice';
 
 import Page from '@/layout/Page';
 
 import useTeams from '../useTeams';
 
-type Pages = 'members' | 'settings' | 'boards';
+type Pages = 'members' | 'settings' | 'boards' | 'invites';
 
-const PAGE_MAP: Array<Pages> = ['boards', 'members', 'settings'];
+const PAGE_MAP: Array<Pages> = ['boards', 'members', 'settings', 'invites'];
 
 const getPath = () => location.pathname.split('/').pop() || 'retros';
 const getPathIndex = () => {
@@ -61,6 +62,12 @@ export default function TeamDetails() {
                         iconPosition="start"
                         icon={<SettingsIcon />}
                         onClick={() => goTo('settings')}
+                    />
+                    <Tab
+                        label="Convites"
+                        iconPosition="start"
+                        icon={<LocalPostOfficeIcon />}
+                        onClick={() => goTo('invites')}
                     />
                 </Tabs>
             </Box>
