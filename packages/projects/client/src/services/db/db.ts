@@ -1,5 +1,5 @@
 import type { Firestore, DocumentData, WithFieldValue, WhereFilterOp } from 'firebase/firestore';
-import { doc, setDoc, query, collection, where, onSnapshot, getDocs, updateDoc } from 'firebase/firestore';
+import { doc, setDoc, query, collection, where, onSnapshot, getDocs } from 'firebase/firestore';
 
 type Field = WithFieldValue<DocumentData>;
 
@@ -10,17 +10,15 @@ type CollectionData<
     T extends ArrayOrObject<F> = ArrayOrObject<F>,
     K extends keyof T = keyof T,
 > = {
-    [Key in K]: {
-        data: F;
-        path: string;
-        pathSegments: string[];
-        filters: Array<{
-            field: Key;
-            operator: WhereFilterOp;
-            value: T[Key] extends Array<infer V> ? V : T[Key];
-        }>;
-    };
-}[K];
+    data: F;
+    path: string;
+    pathSegments: string[];
+    filters: Array<{
+        field: K;
+        operator: WhereFilterOp;
+        value: T[K] extends Array<infer V> ? V : T[K];
+    }>;
+};
 
 export default class DB {
     constructor(private db: Firestore) { }
