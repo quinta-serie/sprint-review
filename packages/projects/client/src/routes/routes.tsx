@@ -10,6 +10,7 @@ import Teams, { TeamProvider } from '@/pages/Teams';
 import TeamDetails from '@/pages/Teams/TeamDetails';
 import TeamBoards from '@/pages/Teams/TeamDetails/Boards';
 import TeamMembers from '@/pages/Teams/TeamDetails/Members';
+import TeamInvites from '@/pages/Teams/TeamDetails/Invites';
 import TeamSettings from '@/pages/Teams/TeamDetails/Settings';
 
 import { UserLoggedOutGuard, UserLoggedGuard } from './LoggedGuard';
@@ -67,6 +68,10 @@ export const router = createBrowserRouter([
                             {
                                 path: 'boards',
                                 element: <TeamBoards />,
+                            },
+                            {
+                                path: 'invites',
+                                element: <TeamInvites />,
                             }
                         ]
                     }

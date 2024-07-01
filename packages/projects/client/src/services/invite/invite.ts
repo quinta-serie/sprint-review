@@ -25,4 +25,19 @@ export default class Invite {
             filters: [{ field: 'email', operator: '==', value: email }],
         });
     }
+
+    async getTeamInvites(teamId: string) {
+        return this.db.getList<InviteData>({
+            path: Invite.PATH,
+            pathSegments: [],
+            filters: [
+                { field: 'teamId', operator: '==', value: teamId },
+                { field: 'status', operator: '==', value: 'sent' }
+            ],
+        });
+    }
+
+    async deleteInvite(id: string) {
+        return this.db;
+    }
 }
