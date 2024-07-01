@@ -11,6 +11,10 @@ coverage/
 
 #ENV
 .env
+.env.local
+.env.qa
+.env.prod
+.env.test
 
 # SSR
 node_modules
