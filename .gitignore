@@ -9,6 +9,9 @@ videos/
 screenshots/
 coverage/
 
+#ENV
+.env
+
 # SSR
 node_modules
 *.log*

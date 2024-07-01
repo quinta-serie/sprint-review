@@ -25,15 +25,28 @@ module.exports = {
         'import/no-anonymous-default-export': 'off',
         '@typescript-eslint/no-explicit-any': ['off'],
         '@typescript-eslint/no-unused-vars': ['warn'],
+        'no-multiple-empty-lines': ['error', { 'max': 1 }],
+        'keyword-spacing': ['error', { 'before': true, 'after': true }],
+        'object-curly-spacing': ['error', 'always'],
+        'space-before-function-paren': ['error', {
+            'anonymous': 'always',
+            'named': 'never',
+            'asyncArrow': 'always'
+        }],
+        'max-len': ['error', { 'code': 120 }],
         'import-helpers/order-imports': [
             'warn',
             {
                 newlinesBetween: 'always',
                 groups: [
+                    ['/^react/'],
                     'module',
+                    '/^@mui/(?!icons-material)/',
+                    '/^@mui/icons-material/',
                     '/^@sprint-review/',
                     '/^@(?!sprint-review)/',
-                    ['parent', 'sibling', 'index']
+                    ['parent', 'sibling', 'index'],
+                    '/^~/',
                 ]
             }
         ]

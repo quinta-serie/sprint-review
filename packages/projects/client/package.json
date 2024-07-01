@@ -4,10 +4,10 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "start:qa": "env-cmd -f .env.qa vite --port 5000",
-    "start:prod": "env-cmd -f .env.prod vite --port 5000",
-    "start:test": "env-cmd -f .env.test vite --port 5000",
-    "start:local": "env-cmd -f .env.local vite --port 5000",
+    "start:qa": "env-cmd -f .env.qa vite --port 8000",
+    "start:prod": "env-cmd -f .env.prod vite --port 8000",
+    "start:test": "env-cmd -f .env.test vite --port 8000",
+    "start:local": "env-cmd -f .env.local vite --port 8000",
     "build:prod": "tsc && env-cmd -f .env.prod vite build",
     "build:qa": "tsc && VITE_THEME=zap env-cmd -f .env.qa vite build",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
@@ -16,31 +16,32 @@
   "dependencies": {
     "@emotion/react": "^11.11.4",
     "@emotion/styled": "^11.11.5",
-    "@firebase/auth": "^1.7.3",
-    "@mui/icons-material": "^5.15.18",
-    "@mui/material": "^5.15.18",
-    "firebase": "^10.12.1",
+    "@firebase/auth": "^1.7.4",
+    "@mui/icons-material": "^5.15.20",
+    "@mui/material": "^5.15.20",
+    "firebase": "^10.12.2",
     "js-cookie": "^3.0.5",
+    "notistack": "^3.0.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-gtm-module": "^2.0.11",
     "react-router-dom": "^6.23.1",
-    "react-shadow": "^20.4.0"
+    "react-shadow": "^20.5.0"
   },
   "devDependencies": {
     "@types/js-cookie": "^3.0.6",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "@types/react-gtm-module": "^2.0.3",
-    "@typescript-eslint/eslint-plugin": "^7.10.0",
+    "@typescript-eslint/eslint-plugin": "^7.13.1",
     "@typescript-eslint/parser": "^7.10.0",
-    "@vitejs/plugin-react": "^4.3.0",
+    "@vitejs/plugin-react": "^4.3.1",
     "env-cmd": "^10.1.0",
-    "eslint": "^9.3.0",
+    "eslint": "^8.57.0",
     "eslint-plugin-react-hooks": "^4.6.2",
     "eslint-plugin-react-refresh": "^0.4.7",
-    "sass": "^1.77.2",
-    "typescript": "^5.4.5",
-    "vite": "^5.2.11"
+    "sass": "^1.77.6",
+    "typescript": "^5.5.2",
+    "vite": "^5.3.1"
   }
 }

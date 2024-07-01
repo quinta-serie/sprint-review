@@ -1,9 +1,20 @@
 import { initializeApp } from 'firebase/app';
+import { getAnalytics } from 'firebase/analytics';
+import { getFirestore } from 'firebase/firestore';
 import { getRemoteConfig } from 'firebase/remote-config';
-import { getAnalytics, logEvent } from 'firebase/analytics';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
 
+import DB from './db';
 import Auth from './auth';
+import User from './user';
+import Team from './team';
+import Invite from './invite';
+
+// VARIABLES
+
+export const url = {
+    origin: window.location.origin
+};
 
 // FIREBASE
 const app = initializeApp({
@@ -16,7 +27,7 @@ const app = initializeApp({
     messagingSenderId: import.meta.env.VITE_MESSAGING_SENDER_ID,
 }, 'client');
 
-// AUTH
+// FIREBASE SERVICES
 const firebaseAuth = getAuth(app);
 const googleProvider = new GoogleAuthProvider();
 
@@ -27,3 +38,10 @@ export const auth = new Auth({
     googleAuth: () => signInWithPopup(firebaseAuth, googleProvider),
     signout: () => signOut(firebaseAuth),
 });
+
+export const db = new DB(getFirestore(app));
+
+// ENTITY SERVICES
+export const user = new User(db);
+export const team = new Team(db);
+export const invite = new Invite(db);
