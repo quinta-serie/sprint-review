@@ -26,7 +26,7 @@ export default function Logo({ tag = 'div', color = 'default', ...props }: LogoP
             style={{ ...props.style, color: COLOR_MAP[color] }}
             className={[props.className, 'pacifico-regular'].join(' ')}
         >
-            Sprint Review
+            Sr
         </CustomTag>
     );
 }

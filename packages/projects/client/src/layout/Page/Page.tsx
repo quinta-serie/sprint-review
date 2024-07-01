@@ -99,7 +99,7 @@ export default function Page({ children, action, title, loading }: PageProps) {
                     </Stack>
                     {
                         loading
-                            ? <Skeleton variant="rounded" sx={{ height: 57, width: 250 }} />
+                            ? <Skeleton variant="rounded" sx={{ height: 42, width: 250, marginTop: 0 }} />
                             : title && <Box>
                                 <Box
                                     display="flex"

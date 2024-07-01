@@ -6,6 +6,7 @@ import List from '@mui/material/List';
 import Dialog from '@mui/material/Dialog';
 import Avatar from '@mui/material/Avatar';
 import Divider from '@mui/material/Divider';
+import Tooltip from '@mui/material/Tooltip';
 import MuiDrawer from '@mui/material/Drawer';
 import ListItem from '@mui/material/ListItem';
 import Collapse from '@mui/material/Collapse';
@@ -17,9 +18,9 @@ import ListItemButton from '@mui/material/ListItemButton';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
 import { useTheme, styled } from '@mui/material/styles';
 
+import LinkIcon from '@mui/icons-material/Link';
 import ExpandMore from '@mui/icons-material/ExpandMore';
 import ExpandLess from '@mui/icons-material/ExpandLess';
-import LinkIcon from '@mui/icons-material/Link';
 
 import Logo from '@/components/Logo';
 import { auth } from '@/services/core';
@@ -51,7 +52,7 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
                 }),
                 width: theme.spacing(7),
                 [theme.breakpoints.up('sm')]: {
-                    width: theme.spacing(9),
+                    width: theme.spacing(7),
                 },
             }),
         },
@@ -103,20 +104,25 @@ const WithOutChildren = ({ btn, goTo, disablePadding = true }: IButtonDetail & {
     const matchPath = location.pathname.includes(btn.path);
 
     return (
-        <ListItem
-            key={btn.label}
-            disablePadding
-            sx={{ color: matchPath ? activeColor : deactiveColor }}
-        >
-            <ListItemButton onClick={() => goTo(btn.path, btn.internal)} sx={{ paddingLeft: disablePadding ? 2 : 4 }}>
-                <ListItemIcon sx={{
-                    color: matchPath ? activeColor : deactiveColor
-                }}>
-                    {btn.icon}
-                </ListItemIcon>
-                <ListItemText primary={btn.label} />
-            </ListItemButton>
-        </ListItem>
+        <Tooltip title={btn.label} placement="right">
+            <ListItem
+                key={btn.label}
+                disablePadding
+                sx={{ color: matchPath ? activeColor : deactiveColor }}
+            >
+                <ListItemButton
+                    onClick={() => goTo(btn.path, btn.internal)}
+                    sx={{ paddingLeft: disablePadding ? 2 : 4 }}
+                >
+                    <ListItemIcon sx={{
+                        color: matchPath ? activeColor : deactiveColor
+                    }}>
+                        {btn.icon}
+                    </ListItemIcon>
+                    <ListItemText primary={btn.label} />
+                </ListItemButton>
+            </ListItem>
+        </Tooltip>
     );
 };
 
@@ -130,7 +136,10 @@ const ButtonList = ({ list, onOpenDialog }: { list: Array<IButton>; onOpenDialog
             return;
         }
 
-        if (path === 'helps' && onOpenDialog) { return; }
+        if (path === 'helps' && onOpenDialog) {
+            onOpenDialog();
+            return;
+        }
 
         internal
             ? navigate(path, { replace: false })
@@ -191,15 +200,15 @@ export default function Default({ children }: IProps) {
 
     return (
         <Box sx={{ display: 'flex' }}>
-            <Drawer variant="permanent" open>
+            <Drawer variant="permanent" open={false}>
                 <nav aria-label="main navigation options">
-                    <Container sx={{ mt: 4, mb: 4 }}>
+                    <Box sx={{ mt: 4, mb: 4 }}>
                         <Logo
                             tag="h2"
                             color="contrast"
                             style={{ textAlign: 'center' }}
                         />
-                    </Container>
+                    </Box>
                     <ButtonList list={BUTTONS.main} />
                     <Divider />
                     <ButtonList list={BUTTONS.support} onOpenDialog={toggleDialogQuestion} />
