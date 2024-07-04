@@ -7,10 +7,7 @@ export default function useFilter<T>(data: T[]) {
 
     function filter(fn: (data: T) => boolean) { setFiltered(data.filter(fn)); }
 
-    function reset() {
-        console.log('reset', data);
-        setFiltered(data);
-    }
+    function reset() { setFiltered(data); }
 
     return useMemo(() => ({ filtered, filter, reset }), [data, filtered]);
 }
