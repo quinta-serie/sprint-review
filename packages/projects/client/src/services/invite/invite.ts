@@ -8,14 +8,18 @@ export default class Invite {
 
     constructor(private db: DB) { }
 
-    async sendInvite(data: InviteData) {
+    async sendInvite(data: Pick<InviteData, 'email' | 'teamId' | 'teamName'>) {
         const id = uuid();
+        const status = 'sent';
+        const createdAt = new Date().toISOString();
+
+        const invite = { ...data, id, status, createdAt };
 
         return this.db.setItem({
             path: Invite.PATH,
             pathSegments: [id],
-            data,
-        });
+            data: invite,
+        }).then(() => invite);
     }
 
     async getUserInvites(email: string) {
@@ -31,13 +35,27 @@ export default class Invite {
             path: Invite.PATH,
             pathSegments: [],
             filters: [
-                { field: 'teamId', operator: '==', value: teamId },
-                { field: 'status', operator: '==', value: 'sent' }
+                { field: 'teamId', operator: '==', value: teamId }
             ],
         });
     }
 
-    async deleteInvite(id: string) {
-        return this.db;
+    async updateInviteStatus(data: InviteData) {
+        return this.db.setItem({
+            data,
+            path: Invite.PATH,
+            pathSegments: [data.id],
+        });
+    }
+
+    subscription(email: string, callback: (data: InviteData) => void) {
+        return this.db.subscription<InviteData>({
+            path: Invite.PATH,
+            pathSegments: [],
+            filters: [
+                { field: 'email', operator: '==', value: email },
+                { field: 'status', operator: '==', value: 'sent' }
+            ],
+        }, callback);
     }
 }
