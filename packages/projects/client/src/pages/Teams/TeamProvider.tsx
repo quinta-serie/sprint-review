@@ -6,6 +6,8 @@ import { team, user } from '@/services/core';
 import type { InviteData } from '@/services/invite';
 import type { TeamPopulated } from '@/services/team';
 
+import useInvites from './TeamDetails/Invites/useInvites';
+
 interface TeamContextConfig {
     loading: boolean;
     selectedTeam: TeamPopulated;
@@ -17,7 +19,8 @@ interface TeamContextConfig {
     }
     addTeam: (team: TeamPopulated) => void;
     updateSelected: (team: TeamPopulated) => void;
-    updateTeams: (team: Array<TeamPopulated>) => void;
+    updateTeam: (team: TeamPopulated) => void;
+    updateTeams: (teams: Array<TeamPopulated>) => void;
 }
 
 export const TeamContext = createContext<TeamContextConfig>({
@@ -30,6 +33,7 @@ export const TeamContext = createContext<TeamContextConfig>({
         do: () => null,
     },
     addTeam: () => null,
+    updateTeam: () => null,
     updateTeams: () => null,
     updateSelected: () => undefined,
 });
@@ -50,6 +54,7 @@ export default function TeamProvider({ children }: TeamProviderProps) {
         filter: { reset, filtered, do: filter },
         addTeam: (team) => addTeam(team),
         updateTeams: (teams) => setMyTeams(teams),
+        updateTeam: (team) => setMyTeams(myTeams.map(t => t.id === team.id ? team : t)),
         updateSelected: (team) => setSelectedTeam(team),
     }), [myTeams, filtered, selectedTeam, loading]);
 
@@ -64,7 +69,7 @@ export default function TeamProvider({ children }: TeamProviderProps) {
 
             setSelectedTeam(selected);
         }
-    }, [location, loading]);
+    }, [location, loading, myTeams]);
 
     const getTeams = () => {
         team.getUserTeamByEmail(user.current.email)
@@ -73,8 +78,8 @@ export default function TeamProvider({ children }: TeamProviderProps) {
 
                 setMyTeams(populatedTeam);
 
-                setTimeout(() => { setLoading(false); }, 500);
-            });
+            })
+            .finally(() => setTimeout(() => { setLoading(false); }, 500));
     };
 
     const addTeam = (team: TeamPopulated) => { setMyTeams([...myTeams, team]); };

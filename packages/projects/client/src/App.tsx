@@ -9,6 +9,7 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 import CloseIcon from '@mui/icons-material/Close';
 
 import Layout from '@/layout/Default';
+import { TeamProvider } from '@/pages/Teams';
 
 import theme from './theme';
 
@@ -31,9 +32,12 @@ function App() {
                     </IconButton>
                 )}
             >
-                <Layout>
-                    <Outlet />
-                </Layout>
+
+                <TeamProvider>
+                    <Layout>
+                        <Outlet />
+                    </Layout>
+                </TeamProvider>
             </SnackbarProvider>
         </ThemeProvider >
     );

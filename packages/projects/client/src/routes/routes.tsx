@@ -4,14 +4,16 @@ import App from '@/App';
 import Home from '@/pages/Home';
 import Signin from '@/pages/Signin';
 import Boards from '@/pages/Boards';
-import Invite from '@/pages/Invite';
 import Account from '@/pages/Account';
-import Teams, { TeamProvider } from '@/pages/Teams';
+import Toinvite from '@/pages/ToInvite';
+import Teams from '@/pages/Teams';
 import TeamDetails from '@/pages/Teams/TeamDetails';
 import TeamBoards from '@/pages/Teams/TeamDetails/Boards';
 import TeamMembers from '@/pages/Teams/TeamDetails/Members';
 import TeamInvites from '@/pages/Teams/TeamDetails/Invites';
 import TeamSettings from '@/pages/Teams/TeamDetails/Settings';
+import InviteUserModalProvider from '@/pages/Teams/InviteUserModal';
+import InvitesProvider from '@/pages/Teams/TeamDetails/Invites/InvitesProvider';
 
 import { UserLoggedOutGuard, UserLoggedGuard } from './LoggedGuard';
 
@@ -43,15 +45,15 @@ export const router = createBrowserRouter([
             },
             {
                 path: '/teams',
-                element: (
-                    <TeamProvider>
-                        <Outlet />
-                    </TeamProvider>
-                ),
+                element: <Outlet />,
                 children: [
                     {
                         path: '',
-                        element: <Teams />,
+                        element: (
+                            <InviteUserModalProvider>
+                                <Teams />
+                            </InviteUserModalProvider>
+                        ),
                     },
                     {
                         path: ':teamId',
@@ -71,7 +73,13 @@ export const router = createBrowserRouter([
                             },
                             {
                                 path: 'invites',
-                                element: <TeamInvites />,
+                                element: (
+                                    <InvitesProvider>
+                                        <InviteUserModalProvider>
+                                            <TeamInvites />
+                                        </InviteUserModalProvider>
+                                    </InvitesProvider>
+                                ),
                             }
                         ]
                     }
@@ -82,8 +90,8 @@ export const router = createBrowserRouter([
                 element: <Account />,
             },
             {
-                path: '/invite/:teamId',
-                element: <Invite />,
+                path: '/to-invite/:teamId',
+                element: <Toinvite />,
             },
         ]
     },
