@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
@@ -23,7 +23,7 @@ import Form, { Control, FormControl, useForm } from '@/components/Form';
 import useTeams from './useTeams';
 import TeamCard from './TeamCard';
 import CreateTeamModal from './CreateTeamModal';
-import InviteUserModal from './InviteUserModal';
+import { useInviteUserModal } from './InviteUserModal';
 
 function SkeletonCards() {
     const arr = new Array(6).fill('');
@@ -99,8 +99,7 @@ function Content({ onOpenCreateModal, onAddMember }: ContentProps) {
 export default function Teams() {
     const { filter, loading } = useTeams();
     const [showCreateModal, setShowCreateModal] = useState(false);
-    const [showInviteModal, setShowInviteModal] = useState(false);
-    const [teamSelected, setTeamSelected] = useState<TeamPopulated>({} as TeamPopulated);
+    const { InviteUserModal, toggleModal, isOpen, selectedTeam, updateTeamSelected } = useInviteUserModal();
 
     const [formGroup] = useForm<{ name: string }>({
         form: {
@@ -124,11 +123,10 @@ export default function Teams() {
     }, []);
 
     const toggleCreateModal = () => { setShowCreateModal(prev => !prev); };
-    const toggleInviteModal = () => { setShowInviteModal(prev => !prev); };
 
     const handleAddMember = (team: TeamPopulated) => {
-        setTeamSelected(team);
-        toggleInviteModal();
+        updateTeamSelected(team);
+        toggleModal();
     };
 
     return (
@@ -176,9 +174,9 @@ export default function Teams() {
                     onClose={toggleCreateModal}
                 />
                 <InviteUserModal
-                    open={showInviteModal}
-                    teamSelected={teamSelected}
-                    onClose={toggleInviteModal}
+                    open={isOpen}
+                    onClose={toggleModal}
+                    teamSelected={selectedTeam as TeamPopulated}
                 />
             </Stack>
         </Page>

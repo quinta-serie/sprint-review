@@ -52,7 +52,7 @@ export default function TeamDetails() {
                         onClick={() => goTo('boards')}
                     />
                     <Tab
-                        label="Time"
+                        label="Membros"
                         iconPosition="start"
                         icon={<GroupsIcon />}
                         onClick={() => goTo('members')}

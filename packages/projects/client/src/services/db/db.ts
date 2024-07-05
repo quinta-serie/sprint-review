@@ -55,12 +55,18 @@ export default class DB {
     }
 
     public subscription<F extends Field>(
-        { path, pathSegments }: Omit<CollectionData<F>, 'data'>,
+        { path, pathSegments, filters }: Omit<CollectionData<F>, 'data'>,
         callback: (data: F) => void
     ) {
-        return onSnapshot(
-            doc(this.db, path, ...pathSegments),
-            (doc) => { callback(doc.data() as F); }
+        const q = query(
+            collection(this.db, path, ...pathSegments),
+            ...filters.map(({ field, operator, value }) => where(field as string, operator, value))
         );
+
+        return onSnapshot(q, (snapshot) => {
+            snapshot.docChanges().forEach((change) => {
+                callback(change.doc.data() as F);
+            });
+        });
     }
 }

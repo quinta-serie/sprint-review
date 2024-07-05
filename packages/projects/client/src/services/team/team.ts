@@ -35,14 +35,11 @@ export default class Team {
         }).then(() => ({ ...data, id }));
     }
 
-    updateMemberToTeam(data: TeamData) {
+    updateTeam(data: TeamData) {
         return this.db.setItem({
             path: Team.PATH,
             pathSegments: [data.id],
-            data: {
-                ...data,
-                members: data.members,
-            }
+            data
         });
     }
 

@@ -29,6 +29,9 @@ import useKey from '@/hooks/useKey';
 import { invite, url } from '@/services/core';
 import { validator } from '@/components/Form';
 import type { TeamPopulated } from '@/services/team';
+import type { InviteData } from '@/services/invite';
+
+import useInvites from '../TeamDetails/Invites/useInvites';
 
 const Transition = forwardRef(function Transition(
     props: TransitionProps & {
@@ -39,13 +42,14 @@ const Transition = forwardRef(function Transition(
     return <Slide direction="up" ref={ref} {...props} />;
 });
 
-interface InviteUserModalProps { teamSelected: TeamPopulated; open: boolean; onClose: () => void, }
+export interface InviteUserModalProps { teamSelected: TeamPopulated; open: boolean; onClose: () => void, }
 export default function InviteUserModal({ teamSelected, open, onClose }: InviteUserModalProps) {
+    const { addInvites } = useInvites();
     const [loading, setLoading] = useState(false);
     const [emails, setEmails] = useState<string[]>([]);
     const [input, setInput] = useState({ value: '', error: '' });
 
-    const inviteLink = `${url.origin}/invite/${teamSelected.id}`;
+    const inviteLink = teamSelected ? `${url.origin}/to-invite/${teamSelected.id}` : '';
 
     useKey({ Enter: () => { addEmail(); } }, [input]);
 
@@ -85,17 +89,17 @@ export default function InviteUserModal({ teamSelected, open, onClose }: InviteU
 
         setLoading(true);
 
-        const promiseArr = emails.map(email =>
-            invite.sendInvite({
-                email,
-                status: 'sent',
-                teamId: teamSelected.id,
-                createdAt: new Date().toLocaleString()
-            })
-        );
+        const promiseArr = emails.map(email => invite.sendInvite({
+            email,
+            teamId: teamSelected.id,
+            teamName: teamSelected.name
+        }));
 
         Promise.all(promiseArr)
-            .then(() => { enqueueSnackbar('Convites enviados com sucesso!', { variant: 'success' }); })
+            .then((r) => {
+                addInvites(r as InviteData[]);
+                enqueueSnackbar('Convites enviados com sucesso!', { variant: 'success' });
+            })
             .catch(() => { enqueueSnackbar('Oops! Tivemos um problema ao enviar os convites', { variant: 'error' }); })
             .finally(() => {
                 setLoading(false);
