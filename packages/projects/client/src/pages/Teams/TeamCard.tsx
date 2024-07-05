@@ -18,12 +18,12 @@ import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import type { TeamPopulated } from '@/services/team';
 
 interface TeamCardProps extends TeamPopulated { onAddMember: (team: TeamPopulated) => void; }
-export default function TeamCard({ onAddMember, admin, members, name, id }: TeamCardProps) {
+export default function TeamCard({ onAddMember, admin, members, name, id, defaultTemplate }: TeamCardProps) {
     const navigate = useNavigate();
 
     const goToDetails = () => navigate(`/teams/${id}/boards`);
 
-    const handleAddMember = () => { onAddMember({ admin, members, name, id }); };
+    const handleAddMember = () => { onAddMember({ admin, members, name, id, defaultTemplate }); };
 
     return (
         <Card

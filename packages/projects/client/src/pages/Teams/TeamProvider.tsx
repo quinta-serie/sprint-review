@@ -1,12 +1,9 @@
+import { useLocation } from 'react-router-dom';
 import { createContext, useEffect, useMemo, useState } from 'react';
-import { useLocation, useParams } from 'react-router-dom';
 
 import useFilter from '@/hooks/useFilter';
-import { team, user } from '@/services/core';
-import type { InviteData } from '@/services/invite';
 import type { TeamPopulated } from '@/services/team';
-
-import useInvites from './TeamDetails/Invites/useInvites';
+import { team, user, template } from '@/services/core';
 
 interface TeamContextConfig {
     loading: boolean;
@@ -18,7 +15,7 @@ interface TeamContextConfig {
         do: (fn: (team: TeamPopulated) => boolean) => void;
     }
     addTeam: (team: TeamPopulated) => void;
-    updateSelected: (team: TeamPopulated) => void;
+    changeSelected: (team: TeamPopulated) => void;
     updateTeam: (team: TeamPopulated) => void;
     updateTeams: (teams: Array<TeamPopulated>) => void;
 }
@@ -35,7 +32,7 @@ export const TeamContext = createContext<TeamContextConfig>({
     addTeam: () => null,
     updateTeam: () => null,
     updateTeams: () => null,
-    updateSelected: () => undefined,
+    changeSelected: () => undefined,
 });
 
 interface TeamProviderProps { children: React.JSX.Element; }
@@ -55,7 +52,7 @@ export default function TeamProvider({ children }: TeamProviderProps) {
         addTeam: (team) => addTeam(team),
         updateTeams: (teams) => setMyTeams(teams),
         updateTeam: (team) => setMyTeams(myTeams.map(t => t.id === team.id ? team : t)),
-        updateSelected: (team) => setSelectedTeam(team),
+        changeSelected: (team) => setSelectedTeam(team),
     }), [myTeams, filtered, selectedTeam, loading]);
 
     useEffect(() => { getTeams(); }, []);
@@ -73,12 +70,8 @@ export default function TeamProvider({ children }: TeamProviderProps) {
 
     const getTeams = () => {
         team.getUserTeamByEmail(user.current.email)
-            .then(async (teams) => {
-                const populatedTeam = await team.pupulateTeam(teams, user);
-
-                setMyTeams(populatedTeam);
-
-            })
+            .then((teams) => team.pupulateTeam(teams, user, template))
+            .then((teams) => setMyTeams(teams))
             .finally(() => setTimeout(() => { setLoading(false); }, 500));
     };
 

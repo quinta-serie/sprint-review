@@ -16,6 +16,7 @@ import type { TransitionProps } from '@mui/material/transitions';
 
 import { team, user } from '@/services/core';
 import Form, { useForm, Control, FormControl } from '@/components/Form';
+import { defaultTemplate } from '@/services/template';
 
 import useTeams from './useTeams';
 
@@ -51,7 +52,13 @@ export default function CreateTeamModal({ open, onClose }: CreateTeamModalProps)
 
                         enqueueSnackbar('Time criado com sucesso!', { variant: 'success' });
 
-                        addTeam({ name, admin: user.current, members: [user.current], id });
+                        addTeam({
+                            id,
+                            name,
+                            admin: user.current,
+                            members: [user.current],
+                            defaultTemplate: defaultTemplate(id)
+                        });
                     })
                     .catch(() => {
                         enqueueSnackbar('Oops! Tivemos um problema ao criar o time', { variant: 'error' });

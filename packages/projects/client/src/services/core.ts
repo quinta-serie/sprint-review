@@ -9,6 +9,7 @@ import Auth from './auth';
 import User from './user';
 import Team from './team';
 import Invite from './invite';
+import Template from './template';
 
 // VARIABLES
 
@@ -45,3 +46,4 @@ export const db = new DB(getFirestore(app));
 export const user = new User(db);
 export const team = new Team(db);
 export const invite = new Invite(db);
+export const template = new Template(db);

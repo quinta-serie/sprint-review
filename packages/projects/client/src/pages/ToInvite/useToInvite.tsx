@@ -5,8 +5,8 @@ import { enqueueSnackbar } from 'notistack';
 
 import log from '@/utils/log';
 import useTeams from '@/pages/Teams/useTeams';
-import { user, team } from '@/services/core';
 import { removeDuplicate } from '@/utils/array';
+import { user, team, template } from '@/services/core';
 
 export default function useToInvite() {
     const navigate = useNavigate();
@@ -25,7 +25,7 @@ export default function useToInvite() {
 
                 team.updateTeam({ ...t, members: mappedMembers })
                     .then(async () => {
-                        const populatedTeam = await team.pupulateTeam([t], user);
+                        const populatedTeam = await team.pupulateTeam([t], user, template);
 
                         populatedTeam[0].members.push(user.current);
 
