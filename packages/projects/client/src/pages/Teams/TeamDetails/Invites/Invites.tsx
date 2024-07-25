@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
@@ -22,9 +22,9 @@ import AccessAlarmsIcon from '@mui/icons-material/AccessAlarms';
 
 import TabPage from '@/layout/TabPage';
 import type { InviteData, InviteStatus } from '@/services/invite';
+import usePagination from '@/hooks/usePagination';
 
-import useInvites from './useInvites';
-import useTeams from '../../useTeams';
+import useTeamDetails from '../useTeamDetails';
 import { useInviteUserModal } from '../../InviteUserModal';
 
 function TableLoading() {
@@ -37,7 +37,7 @@ function TableLoading() {
 
 function TableRowItem(inviteData: InviteData) {
     const [loading, setLoading] = useState(false);
-    const { excludeInvite } = useInvites();
+    const { deleteInvite } = useTeamDetails();
 
     const { createdAt, email, status } = inviteData;
 
@@ -51,7 +51,7 @@ function TableRowItem(inviteData: InviteData) {
     const handleExclue = () => {
         setLoading(true);
 
-        excludeInvite(inviteData)
+        deleteInvite(inviteData)
             .finally(() => setTimeout(() => { setLoading(false); }, 500));
     };
 
@@ -101,27 +101,10 @@ function TableRowItem(inviteData: InviteData) {
     );
 }
 
-function InvitesTable() {
-    const { pagination: { paginated } } = useInvites();
-
-    return (
-        <Box sx={{ minHeight: 367 }}>
-            <TableContainer elevation={0} component={Paper}>
-                <Table sx={{ minWidth: 650, border: (theme) => `1px solid ${theme.palette.grey[300]}` }}>
-                    <TableBody>
-                        {
-                            paginated.map((row) => <TableRowItem key={row.id} {...row} />)
-                        }
-                    </TableBody>
-                </Table>
-            </TableContainer>
-        </Box>
-    );
-}
-
 function WithContent() {
+    const { invites } = useTeamDetails();
     const { toggleModal } = useInviteUserModal();
-    const { pagination: { totalPages, paginate } } = useInvites();
+    const { paginate, paginated, totalPages } = usePagination(invites, 5);
 
     const handleChange = (_: React.ChangeEvent<unknown>, value: number) => { paginate(value); };
 
@@ -137,7 +120,17 @@ function WithContent() {
                     Adicionar membro
                 </Button>
             </Box>
-            <InvitesTable />
+            <Box sx={{ minHeight: 367 }}>
+                <TableContainer elevation={0} component={Paper}>
+                    <Table sx={{ minWidth: 650, border: (theme) => `1px solid ${theme.palette.grey[300]}` }}>
+                        <TableBody>
+                            {
+                                paginated.map((row) => <TableRowItem key={row.id} {...row} />)
+                            }
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+            </Box>
             <Box sx={{ display: 'flex' }}>
                 <Pagination
                     color="primary"
@@ -178,8 +171,7 @@ function EmptyContent() {
 }
 
 function Content() {
-    const { invites } = useInvites();
-    const { selectedTeam } = useTeams();
+    const { team, invites } = useTeamDetails();
     const { InviteUserModal, toggleModal, isOpen } = useInviteUserModal();
 
     return (
@@ -192,21 +184,22 @@ function Content() {
             <InviteUserModal
                 open={isOpen}
                 onClose={toggleModal}
-                teamSelected={selectedTeam}
+                teamSelected={team}
             />
         </Box>
     );
 }
 
 export default function Invites() {
-    const { loading } = useTeams();
-    const { loadingInvites } = useInvites();
+    const { loading, getTeamInvites } = useTeamDetails();
+
+    useEffect(() => { if (!loading.details) { getTeamInvites(); } }, [loading.details]);
 
     return (
         <TabPage>
             <Box>
                 {
-                    loading && loadingInvites
+                    loading.details || loading.invites
                         ? <TableLoading />
                         : <Content />
                 }

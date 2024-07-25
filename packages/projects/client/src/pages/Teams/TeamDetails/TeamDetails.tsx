@@ -12,7 +12,7 @@ import LocalPostOfficeIcon from '@mui/icons-material/LocalPostOffice';
 
 import Page from '@/layout/Page';
 
-import useTeams from '../useTeams';
+import useTeamDetails from './useTeamDetails';
 
 type Pages = 'members' | 'settings' | 'boards' | 'invites';
 
@@ -28,23 +28,23 @@ const getPathIndex = () => {
 export default function TeamDetails() {
     const navigate = useNavigate();
     const location = useLocation();
-    const { myTeams, loading } = useTeams();
+    const { getTeamDetails, loading, team } = useTeamDetails();
     const [page, setPage] = useState(getPathIndex());
     const { teamId } = useParams<{ teamId: string; }>();
 
-    const teamDetail = myTeams.find(({ id }) => id === teamId);
-
     useEffect(() => { setPage(getPathIndex()); }, [location]);
+
+    useEffect(() => { getTeamDetails(teamId as string); }, []);
 
     const goTo = (tab: Pages) => { navigate(`/teams/${teamId}/${tab}`, { replace: false }); };
 
     return (
         <Page
-            loading={loading}
-            title={loading ? '' : teamDetail?.name}
+            loading={loading.details}
+            title={loading.details ? '' : team.name}
         >
             <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                <Tabs value={page} aria-label="basic tabs example">
+                <Tabs value={page}>
                     <Tab
                         label="Retrôs"
                         iconPosition="start"
