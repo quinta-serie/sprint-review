@@ -2,7 +2,6 @@ import HelpIcon from '@mui/icons-material/Help';
 import HomeIcon from '@mui/icons-material/Home';
 import LogoutIcon from '@mui/icons-material/Logout';
 import GroupsIcon from '@mui/icons-material/Groups';
-import DashboardIcon from '@mui/icons-material/Dashboard';
 import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 
 import { IButton } from './interface';
@@ -13,12 +12,6 @@ const BUTTONS_MAIN: Array<IButton> = [
         path: '/home',
         internal: true,
         icon: <HomeIcon />
-    },
-    {
-        label: 'Minhas retrôs',
-        path: '/boards',
-        internal: true,
-        icon: <DashboardIcon />
     },
     {
         label: 'Meus times',

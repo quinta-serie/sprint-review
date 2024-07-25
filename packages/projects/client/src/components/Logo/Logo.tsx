@@ -6,9 +6,10 @@ import './Logo.scss';
 
 interface LogoProps extends HTMLAttributes<HTMLElement> {
     tag?: React.ElementType;
+    onlyInitials?: boolean;
     color?: 'primary' | 'secondary' | 'contrast' | 'default';
 }
-export default function Logo({ tag = 'div', color = 'default', ...props }: LogoProps) {
+export default function Logo({ tag = 'div', color = 'default', onlyInitials = false, ...props }: LogoProps) {
     const { palette } = useTheme();
 
     const CustomTag = tag;
@@ -26,7 +27,7 @@ export default function Logo({ tag = 'div', color = 'default', ...props }: LogoP
             style={{ ...props.style, color: COLOR_MAP[color] }}
             className={[props.className, 'pacifico-regular'].join(' ')}
         >
-            Sr
+            {onlyInitials ? 'Sr!' : 'Sprint Review!'}
         </CustomTag>
     );
 }
