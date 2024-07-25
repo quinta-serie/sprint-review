@@ -1761,6 +1761,7 @@ __metadata:
     "@typescript-eslint/eslint-plugin": ^7.13.1
     "@typescript-eslint/parser": ^7.10.0
     "@vitejs/plugin-react": ^4.3.1
+    emoji-picker-react: ^4.11.1
     env-cmd: ^10.1.0
     eslint: ^8.57.0
     eslint-plugin-react-hooks: ^4.6.2
@@ -2915,6 +2916,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"emoji-picker-react@npm:^4.11.1":
+  version: 4.11.1
+  resolution: "emoji-picker-react@npm:4.11.1"
+  dependencies:
+    flairup: 1.0.0
+  peerDependencies:
+    react: ">=16"
+  checksum: 5309644cb36615e9a12800f5d1f078a3f5dd618856a66db9a7859bcd977aad009e69d228416f89e1a9577e2e9ee06c8e160c6b6eb1b1d167a4e751da785aea17
+  languageName: node
+  linkType: hard
+
 "emoji-regex@npm:^8.0.0":
   version: 8.0.0
   resolution: "emoji-regex@npm:8.0.0"
@@ -3652,6 +3664,13 @@ __metadata:
     "@firebase/util": 1.9.6
     "@firebase/vertexai-preview": 0.0.2
   checksum: d5b00dd2a7b8b779bb2d589a4f8e43952857e28903bc24b6713752a942118a32fbcd545a8fc20341c78e9b21bee43c11cb1a9f75ce56e0f81fbac578c27bce2a
+  languageName: node
+  linkType: hard
+
+"flairup@npm:1.0.0":
+  version: 1.0.0
+  resolution: "flairup@npm:1.0.0"
+  checksum: cf062568ed211c95b3ed4e378046803519616426c450d37d7659c10a8ad842f862bef1216aa55ddd91971433a5883272004286a06a13c27b428bc5f740d97c50
   languageName: node
   linkType: hard
 

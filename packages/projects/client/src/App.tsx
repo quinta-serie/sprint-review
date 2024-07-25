@@ -8,12 +8,9 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 
 import CloseIcon from '@mui/icons-material/Close';
 
-import Layout from '@/layout/Default';
-import { TeamProvider } from '@/pages/Teams';
-
 import theme from './theme';
 
-function App() {
+export default function App() {
     const getTokens = (mode: PaletteMode) => { return createTheme(theme[mode]); };
     return (
         <ThemeProvider theme={getTokens('light')}>
@@ -32,15 +29,8 @@ function App() {
                     </IconButton>
                 )}
             >
-
-                <TeamProvider>
-                    <Layout>
-                        <Outlet />
-                    </Layout>
-                </TeamProvider>
+                <Outlet />
             </SnackbarProvider>
         </ThemeProvider >
     );
 }
-
-export default App;

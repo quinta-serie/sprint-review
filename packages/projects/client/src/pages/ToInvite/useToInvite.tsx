@@ -6,28 +6,28 @@ import { enqueueSnackbar } from 'notistack';
 import log from '@/utils/log';
 import useTeams from '@/pages/Teams/useTeams';
 import { removeDuplicate } from '@/utils/array';
-import { user, team, template } from '@/services/core';
+import { userServices, teamServices, templateServices } from '@/services/core';
 
 export default function useToInvite() {
     const navigate = useNavigate();
     const { addTeam } = useTeams();
-    const { email } = user.current;
+    const { email } = userServices.current;
     const [loading, setLoading] = useState(true);
 
     const toInvite = async (teamId: string) => {
         setLoading(true);
 
-        return team.getTeam(teamId)
+        return teamServices.getTeam(teamId)
             .then(t => {
                 if (!t) { throw new Error('Team not found'); }
 
                 const mappedMembers = removeDuplicate([...t.members, email]);
 
-                team.updateTeam({ ...t, members: mappedMembers })
+                teamServices.updateTeam({ ...t, members: mappedMembers })
                     .then(async () => {
-                        const populatedTeam = await team.pupulateTeam([t], user, template);
+                        const populatedTeam = await teamServices.pupulateTeam([t], userServices, templateServices);
 
-                        populatedTeam[0].members.push(user.current);
+                        populatedTeam[0].members.push(userServices.current);
 
                         addTeam(populatedTeam[0]);
 
