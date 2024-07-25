@@ -2,7 +2,7 @@ import DB from '@/services/db';
 import { uuid } from '@/utils/uuid';
 
 import User, { type UserData } from '../user';
-import Template, { type TemplateData, defaultTemplate } from '../template';
+import Template, { type TemplateData } from '../template';
 import type { TeamData, TeamPopulated } from './interface';
 
 export default class Team {
@@ -44,28 +44,19 @@ export default class Team {
         });
     }
 
-    async pupulateTeam(teams: TeamData[], user: User, template: Template) {
-        const users = await Promise.all(
+    async pupulateTeam(teams: TeamData[], user: User, template: Template): Promise<TeamPopulated[]> {
+        return Promise.all(
             teams.map(async team => {
-                return await Promise.all(team.members.map(email => {
+                const members = await Promise.all(team.members.map(email => {
                     return user.getUserByEmail(email);
-                }));
+                })) as UserData[];
+
+                const admin = await user.getUserByEmail(team.admin) as UserData;
+
+                const defaultTemplate = await template.getTeamDefaultTemplate(team.id) as TemplateData;
+
+                return { ...team, members, admin, defaultTemplate };
             })
         );
-
-        const admin = await Promise.all(teams.map(team => user.getUserByEmail(team.admin)));
-
-        const defaultBoard = await Promise.all(teams.map(team => template.getTemplate(team.id)));
-
-        return teams.map<TeamPopulated>((team) => ({
-            ...team,
-            admin: admin.find((user) => user?.email === team.admin) as UserData,
-            members: team.members.map((email) => {
-                return users.flat().find((user) => user?.email === email) as UserData;
-            }),
-            defaultTemplate:
-                defaultBoard.find((template) => template?.teamId === team.id) as TemplateData
-                || defaultTemplate,
-        }));
     }
 }

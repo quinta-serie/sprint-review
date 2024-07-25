@@ -8,7 +8,15 @@ export default class Template {
 
     constructor(private db: DB) { }
 
-    getTemplate(teamId: string) {
+    getTeamTemplates(teamId: string) {
+        return this.db.getList<TemplateData>({
+            path: Template.PATH,
+            pathSegments: [],
+            filters: [{ field: 'teamId', operator: '==', value: teamId }],
+        });
+    }
+
+    getTeamDefaultTemplate(teamId: string) {
         return this.db.getItem<TemplateData>({
             path: Template.PATH,
             pathSegments: [],

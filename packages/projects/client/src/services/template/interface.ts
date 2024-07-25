@@ -4,7 +4,6 @@ export interface TemplateData {
     teamId: string;
     isDefault: boolean;
     columns: Array<string>;
-    oneVotePerCard: boolean;
     maxVotesPerCard: number;
     maxVotesPerUser: number;
     shouldShowCardsAutor: boolean;
