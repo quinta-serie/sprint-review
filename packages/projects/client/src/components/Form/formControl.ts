@@ -55,7 +55,6 @@ export default class FormControl<C> {
             cpf: maskCpf,
         };
 
-        // @ts-ignore
         if (mask[this.type]) { return mask[this.type](this.value); }
 
         return this.value;

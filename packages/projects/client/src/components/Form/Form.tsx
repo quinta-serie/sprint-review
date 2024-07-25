@@ -16,7 +16,6 @@ const validateChildren = <T,>(arrayChildren: ChildrenElem, formGroup: FormGroup<
     const validatedControls: string[] = [];
 
     Children.map(arrayChildren, (child) => {
-        // @ts-ignore
         const isControl = child.type['name'] === 'Control';
 
         if (isControl) {
