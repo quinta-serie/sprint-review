@@ -26,12 +26,12 @@ import AddIcon from '@mui/icons-material/Add';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 
 import useKey from '@/hooks/useKey';
-import { invite, url } from '@/services/core';
+import { inviteServices, url } from '@/services/core';
 import { validator } from '@/components/Form';
 import type { TeamPopulated } from '@/services/team';
 import type { InviteData } from '@/services/invite';
 
-import useInvites from '../TeamDetails/Invites/useInvites';
+import useTeamDetails from '../TeamDetails/useTeamDetails';
 
 const Transition = forwardRef(function Transition(
     props: TransitionProps & {
@@ -44,7 +44,7 @@ const Transition = forwardRef(function Transition(
 
 export interface InviteUserModalProps { teamSelected: TeamPopulated; open: boolean; onClose: () => void, }
 export default function InviteUserModal({ teamSelected, open, onClose }: InviteUserModalProps) {
-    const { addInvites } = useInvites();
+    const { addInvites } = useTeamDetails();
     const [loading, setLoading] = useState(false);
     const [emails, setEmails] = useState<string[]>([]);
     const [input, setInput] = useState({ value: '', error: '' });
@@ -89,7 +89,7 @@ export default function InviteUserModal({ teamSelected, open, onClose }: InviteU
 
         setLoading(true);
 
-        const promiseArr = emails.map(email => invite.sendInvite({
+        const promiseArr = emails.map(email => inviteServices.sendInvite({
             email,
             teamId: teamSelected.id,
             teamName: teamSelected.name

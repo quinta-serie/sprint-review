@@ -6,39 +6,27 @@ import Stack from '@mui/material/Stack';
 import Avatar from '@mui/material/Avatar';
 import Tooltip from '@mui/material/Tooltip';
 import CardHeader from '@mui/material/CardHeader';
-import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import CardContent from '@mui/material/CardContent';
 import AvatarGroup from '@mui/material/AvatarGroup';
 import CardActionArea from '@mui/material/CardActionArea';
 
-import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 
 import type { TeamPopulated } from '@/services/team';
 
-interface TeamCardProps extends TeamPopulated { onAddMember: (team: TeamPopulated) => void; }
-export default function TeamCard({ onAddMember, admin, members, name, id, defaultTemplate }: TeamCardProps) {
+export default function TeamCard({ admin, members, name, id }: TeamPopulated) {
     const navigate = useNavigate();
 
     const goToDetails = () => navigate(`/teams/${id}/boards`);
-
-    const handleAddMember = () => { onAddMember({ admin, members, name, id, defaultTemplate }); };
 
     return (
         <Card
             elevation={0}
             sx={{ border: (theme) => `1px solid ${theme.palette.grey[300]}` }}
         >
-            <CardHeader
-                title={name}
-                action={
-                    <IconButton onClick={handleAddMember}>
-                        <PersonAddIcon />
-                    </IconButton>
-                }
-            />
             <CardActionArea onClick={goToDetails}>
+                <CardHeader title={name} />
                 <CardContent>
                     <Stack spacing={2}>
                         <Box sx={{ display: 'flex', justifyContent: 'flex-start' }}>

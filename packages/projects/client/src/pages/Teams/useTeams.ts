@@ -1,7 +1,7 @@
 import { useContext } from 'react';
 
-import { TeamContext } from './TeamProvider';
+import { TeamsContext } from './TeamsProvider';
 
 export default function useTeams() {
-    return useContext(TeamContext);
+    return useContext(TeamsContext);
 }

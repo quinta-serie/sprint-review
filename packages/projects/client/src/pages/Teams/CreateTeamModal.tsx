@@ -14,7 +14,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import DialogContentText from '@mui/material/DialogContentText';
 import type { TransitionProps } from '@mui/material/transitions';
 
-import { team, user } from '@/services/core';
+import { teamServices, userServices } from '@/services/core';
 import Form, { useForm, Control, FormControl } from '@/components/Form';
 import { defaultTemplate } from '@/services/template';
 
@@ -44,9 +44,9 @@ export default function CreateTeamModal({ open, onClose }: CreateTeamModalProps)
                 setLoading(true);
 
                 const { name } = form.values;
-                const { email } = user.current;
+                const { email } = userServices.current;
 
-                team.createTeam({ name, admin: email, members: [email] })
+                teamServices.createTeam({ name, admin: email, members: [email] })
                     .then(newTeam => {
                         const { id } = newTeam;
 
@@ -55,8 +55,8 @@ export default function CreateTeamModal({ open, onClose }: CreateTeamModalProps)
                         addTeam({
                             id,
                             name,
-                            admin: user.current,
-                            members: [user.current],
+                            admin: userServices.current,
+                            members: [userServices.current],
                             defaultTemplate: defaultTemplate(id)
                         });
                     })

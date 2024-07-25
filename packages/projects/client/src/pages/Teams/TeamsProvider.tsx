@@ -3,9 +3,9 @@ import { createContext, useEffect, useMemo, useState } from 'react';
 
 import useFilter from '@/hooks/useFilter';
 import type { TeamPopulated } from '@/services/team';
-import { team, user, template } from '@/services/core';
+import { teamServices, userServices, templateServices } from '@/services/core';
 
-interface TeamContextConfig {
+interface TeamsContextConfig {
     loading: boolean;
     selectedTeam: TeamPopulated;
     myTeams: Array<TeamPopulated>;
@@ -20,7 +20,7 @@ interface TeamContextConfig {
     updateTeams: (teams: Array<TeamPopulated>) => void;
 }
 
-export const TeamContext = createContext<TeamContextConfig>({
+export const TeamsContext = createContext<TeamsContextConfig>({
     loading: true,
     myTeams: [],
     selectedTeam: {} as TeamPopulated,
@@ -35,15 +35,15 @@ export const TeamContext = createContext<TeamContextConfig>({
     changeSelected: () => undefined,
 });
 
-interface TeamProviderProps { children: React.JSX.Element; }
-export default function TeamProvider({ children }: TeamProviderProps) {
+interface TeamsProviderProps { children: React.JSX.Element; }
+export default function TeamsProvider({ children }: TeamsProviderProps) {
     const location = useLocation();
     const [loading, setLoading] = useState(true);
     const [myTeams, setMyTeams] = useState<Array<TeamPopulated>>([]);
     const { filtered, filter, reset } = useFilter(myTeams);
     const [selectedTeam, setSelectedTeam] = useState<TeamPopulated>(myTeams[0]);
 
-    const context = useMemo<TeamContextConfig>(() => ({
+    const context = useMemo<TeamsContextConfig>(() => ({
         reset,
         loading,
         myTeams,
@@ -69,8 +69,8 @@ export default function TeamProvider({ children }: TeamProviderProps) {
     }, [location, loading, myTeams]);
 
     const getTeams = () => {
-        team.getUserTeamByEmail(user.current.email)
-            .then((teams) => team.pupulateTeam(teams, user, template))
+        teamServices.getUserTeamByEmail(userServices.current.email)
+            .then((teams) => teamServices.pupulateTeam(teams, userServices, templateServices))
             .then((teams) => setMyTeams(teams))
             .finally(() => setTimeout(() => { setLoading(false); }, 500));
     };
@@ -78,8 +78,8 @@ export default function TeamProvider({ children }: TeamProviderProps) {
     const addTeam = (team: TeamPopulated) => { setMyTeams([...myTeams, team]); };
 
     return (
-        <TeamContext.Provider value={context}>
+        <TeamsContext.Provider value={context}>
             {children}
-        </TeamContext.Provider>
+        </TeamsContext.Provider>
     );
 }
