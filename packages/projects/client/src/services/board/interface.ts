@@ -7,7 +7,7 @@ export interface BoardData {
     ownerId: string;
     createdAt: string;
     description: string;
-    cards: CardData[];
+    cards: { [x: string]: CardData[] };
     template: TemplateData;
     status: 'active' | 'archived';
 }

@@ -19,14 +19,12 @@ import MoodIcon from '@mui/icons-material/Mood';
 
 import { uuid } from '@/utils/uuid';
 import { CardData } from '@/services/board';
-import { userServices } from '@/services/core';
+import { COLORS, userServices } from '@/services/core';
 import Form, { useForm, FormControl, Control } from '@/components/Form';
 
 import useBoard from './useBoard';
 
 interface AddCardForm { text: string; color: string; }
-
-const COLORS = ['#2C4AC9', '#FF772A', '#A63EB9', '#009886'];
 
 const Transition = forwardRef(function Transition(
     props: TransitionProps & {
@@ -102,7 +100,7 @@ export default function DialogCardText({ open, action, index, card, onClose }: D
                 const buildText = text.replace(/\n/g, '/n');
 
                 action === 'edit'
-                    ? editCardText(card?.id as string, buildText)
+                    ? editCardText(card?.id as string, card?.column as string, buildText)
                         .finally(() => { handleClose(); })
                     : addCard({
                         color,

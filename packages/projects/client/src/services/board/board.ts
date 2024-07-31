@@ -1,7 +1,9 @@
 import DB from '@/services/db';
 import { uuid } from '@/utils/uuid';
+import { slug } from '@/utils/string';
 
 import { type BoardData } from './interface';
+import { TemplateData } from '../template';
 
 export default class Board {
     private static PATH = 'boards';
@@ -24,16 +26,19 @@ export default class Board {
         });
     }
 
-    async createTeamBoard(data: Omit<BoardData, 'id' | 'createdAt' | 'status'>): Promise<BoardData> {
+    async createTeamBoard(
+        data: Omit<BoardData, 'id' | 'createdAt' | 'status'>
+    ): Promise<BoardData> {
         const id = uuid();
         const status = 'active';
         const createdAt = new Date().toISOString();
+        const cards = Object.fromEntries(data.template.columns.map(column => [slug(column), []]));
 
         return this.db.setItem<BoardData>({
             path: Board.PATH,
             pathSegments: [id],
-            data: { ...data, id, createdAt, status },
-        }).then(() => ({ ...data, id, createdAt, status }));
+            data: { ...data, id, createdAt, status, cards },
+        }).then(() => ({ ...data, id, createdAt, status, cards }));
     }
 
     async updateBoard(data: BoardData): Promise<void> {

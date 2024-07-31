@@ -3,7 +3,6 @@ import { forwardRef, useEffect, useState } from 'react';
 
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
-import Zoom from '@mui/material/Zoom';
 import Stack from '@mui/material/Stack';
 import Slide from '@mui/material/Slide';
 import Button from '@mui/material/Button';
@@ -15,14 +14,19 @@ import DialogTitle from '@mui/material/DialogTitle';
 import Chip, { ChipProps } from '@mui/material/Chip';
 import DialogContent from '@mui/material/DialogContent';
 import { TransitionProps } from '@mui/material/transitions';
+import DialogActions from '@mui/material/DialogActions';
 
 import ShareIcon from '@mui/icons-material/Share';
 import SettingsIcon from '@mui/icons-material/Settings';
 import ControlPointIcon from '@mui/icons-material/ControlPoint';
 
+import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
+
 import useModal from '@/hooks/useModal';
-import { boardServices } from '@/services/core';
+import { boardServices, userServices } from '@/services/core';
 import type { BoardData, CardData } from '@/services/board';
+import { TemplateData } from '@/services/template';
+import { slug } from '@/utils/string';
 
 import useBoard from './useBoard';
 import BoadCard from './BoardCard';
@@ -75,28 +79,60 @@ function TemplateConfigDialog({ open, onClose }: TemplateConfigDialogProps) {
     );
 }
 
-interface ListCardsProps { column: string; }
-function ListCards({ column }: ListCardsProps) {
-    const { board, mergeCards } = useBoard();
+interface MergeConfirmationDialogProps { origin: CardData; target: CardData; open: boolean; onClose: () => void; }
+function MergeConfirmationDialog({ origin, target, open, onClose }: MergeConfirmationDialogProps) {
+    const { mergeCards } = useBoard();
 
-    const handleMerge = (origin: CardData, target: CardData) => {
-        if (origin.id === target.id) { return; }
-
+    const handleMerge = () => {
         mergeCards(origin, target);
+        onClose();
     };
 
     return (
-        board.cards
-            .filter(card => card.column === column)
+        <Dialog
+            fullWidth
+            keepMounted
+            open={open}
+            maxWidth="sm"
+            onClose={onClose}
+            TransitionComponent={Transition}
+        >
+            <DialogTitle>
+                Essa é uma ação irreversível!
+            </DialogTitle>
+            <DialogContent>
+                Tem certeza que deseja juntar os cards?
+            </DialogContent>
+            <DialogActions>
+                <Button color="primary" variant="contained" onClick={onClose}>Não, deixa como está!</Button>
+                <Button color="secondary" variant="contained" onClick={handleMerge}>Sim, Juntar!</Button>
+            </DialogActions>
+        </Dialog>
+    );
+}
+
+interface ListCardsProps { column: string; }
+function ListCards({ column }: ListCardsProps) {
+    const { board } = useBoard();
+
+    return (
+        board.cards[column]
             .map((card, index) => (
-                <Zoom in
+                <Draggable
                     key={card.id}
-                    style={{ transitionDelay: `${100 * (index + 1)}ms` }}
+                    index={index}
+                    draggableId={card.id}
                 >
-                    <div>
-                        <BoadCard {...card} />
-                    </div>
-                </Zoom>
+                    {(provided) => (
+                        <div
+                            {...provided.draggableProps}
+                            {...provided.dragHandleProps}
+                            ref={provided.innerRef}
+                        >
+                            <BoadCard {...card} />
+                        </div>
+                    )}
+                </Draggable>
             ))
     );
 }
@@ -119,7 +155,12 @@ function Columns() {
         <Grid container spacing={2}>
             {
                 board.template.columns.map((column, columnIndex) => (
-                    <Grid key={column} item md={lengthGrids} width="100%">
+                    <Grid
+                        item
+                        width="100%"
+                        key={column}
+                        md={lengthGrids}
+                    >
                         <Typography variant="h6" gutterBottom>{column}</Typography>
                         <Stack direction="column" spacing={1}>
                             <Button
@@ -130,10 +171,22 @@ function Columns() {
                             >
                                 <ControlPointIcon />
                             </Button>
-                            <ListCards column={column} />
+                            <Droppable droppableId={column} isCombineEnabled>
+                                {(provided) => (
+                                    <Stack direction="column" spacing={1}
+                                        ref={provided.innerRef}
+                                        {...provided.droppableProps}
+                                        sx={{ minHeight: 'calc(100vh - 310px)' }}
+                                    >
+                                        <ListCards column={slug(column)} />
+                                        {provided.placeholder}
+                                    </Stack>
+                                )}
+                            </Droppable>
                             <DialogCardText open={open} onClose={toggleDialog} index={index} action="create" />
                         </Stack>
                     </Grid>
+
                 ))
             }
         </Grid >
@@ -141,7 +194,7 @@ function Columns() {
 }
 
 function Content() {
-    const { board } = useBoard();
+    const { board, isOwner } = useBoard();
     const [openTemplateModal, toggleTemplateModal] = useModal();
 
     const MAP_STATUS: { [x in BoardData['status']]: { label: string, color: ChipProps['color'] } } = {
@@ -167,9 +220,13 @@ function Content() {
                 <IconButton onClick={() => console.log('share')} >
                     <ShareIcon />
                 </IconButton>
-                <IconButton onClick={toggleTemplateModal} >
-                    <SettingsIcon />
-                </IconButton>
+                {
+                    isOwner && (
+                        <IconButton onClick={toggleTemplateModal} >
+                            <SettingsIcon />
+                        </IconButton>
+                    )
+                }
             </Stack>
             <Box>
                 <Columns />
@@ -181,24 +238,65 @@ function Content() {
 
 export default function Board() {
     const { boardId } = useParams<{ boardId: string; }>();
-    const { board, loading, getBoardDetails, loadBoard: updateBoard } = useBoard();
+    const [open, setOpen] = useState(false);
+    const [cardsReference, setCardsReference] = useState<{ origin: CardData; target: CardData }>();
+    const { board, loading, getBoardDetails, loadBoard, mergeCards, changeCardPosition } = useBoard();
 
     useEffect(() => { getBoardDetails(boardId as string); }, []);
 
     useEffect(() => {
         if (loading) { return; }
 
-        const unsubscribe = boardServices.subscription(board.id, (data) => { updateBoard(() => data); });
+        const unsubscribe = boardServices.subscription(board.id, (data) => { loadBoard(() => data); });
 
         return () => unsubscribe();
     }, [loading]);
+
+    const toggleMergeDialog = () => { setOpen(prev => !prev); };
+
+    const onDragEnd = (result: DropResult) => {
+        const { droppableId } = result.source;
+        const column = result.destination?.droppableId as string;
+
+        const origin = board.cards[slug(droppableId)].find(card => card.id === result.draggableId) as CardData;
+
+        // dropped in another card
+        if (result.combine) {
+            const target = board.cards[slug(result.combine?.droppableId)]
+                .find(card => card.id === result.combine?.draggableId) as CardData;
+
+            setCardsReference({ origin, target });
+            toggleMergeDialog();
+
+            return;
+        }
+
+        // dropped outside the list
+        if (!result.destination) { return; }
+
+        // dropped in the same position
+        if (result.destination.index === result.source.index && origin.column === column) { return; }
+
+        // dropped in another position
+        changeCardPosition(origin, result.destination.index, column);
+    };
 
     return (
         <div>
             {
                 loading
                     ? <Loading />
-                    : <Content />
+                    : (
+                        <DragDropContext onDragEnd={onDragEnd}>
+                            <Content />
+                            <MergeConfirmationDialog
+                                open={open}
+                                origin={cardsReference?.origin as CardData}
+                                target={cardsReference?.target as CardData}
+                                onClose={toggleMergeDialog}
+                            />
+                        </DragDropContext>
+                    )
             }
         </div>
     );

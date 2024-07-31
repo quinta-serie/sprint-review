@@ -44,7 +44,7 @@ function MenuOptions({ open, anchorEl, onClose, ...cardData }: MenuBoardProps) {
     };
 
     const handleDeleteCard = () => {
-        deleteCard(cardData.id);
+        deleteCard(cardData.id, cardData.column);
         onClose();
     };
 
@@ -82,7 +82,7 @@ interface HeaderProps extends CardData { isOwner: boolean; shouldShowCardsAutor:
 function Header({ isOwner, shouldShowCardsAutor, ...cardData }: HeaderProps) {
     const { open, anchorEl, handleClose, handleOpen } = useMenu();
 
-    const { owner } = cardData;
+    const { owner, id } = cardData;
 
     return (
         <>
@@ -134,8 +134,8 @@ function Header({ isOwner, shouldShowCardsAutor, ...cardData }: HeaderProps) {
     );
 }
 
-type FooterProps = Pick<CardData, 'id' | 'whoLiked'>;
-function Footer({ id, whoLiked }: FooterProps) {
+type FooterProps = Pick<CardData, 'id' | 'whoLiked' | 'column'>;
+function Footer({ id, whoLiked, column }: FooterProps) {
     const { board } = useBoard();
     const { enqueueSnackbar } = useSnackbar();
     const { favoriteCard, unFavoriteCard } = useBoard();
@@ -143,9 +143,12 @@ function Footer({ id, whoLiked }: FooterProps) {
 
     const { email } = userServices.current;
 
-    const yourTotalLikes = board.cards
-        .filter(card => card.whoLiked.includes(email))
-        .reduce((acc, card) => acc + card.whoLiked.filter(e => e === email).length, 0);
+    const yourTotalLikes = Object.keys(board.cards)
+        .reduce((acc, column) => {
+            return board.cards[column].reduce((acc, card) => {
+                return acc + card.whoLiked.filter(e => e === email).length;
+            }, acc);
+        }, 0);
 
     const yourLikesInThisCard = whoLiked.filter(e => e === email).length;
 
@@ -156,7 +159,7 @@ function Footer({ id, whoLiked }: FooterProps) {
 
     const canILikeIt = !(doYouHaveTheMostVotesOnThisCard || doYouHaveTheMaximumTotalVotes);
 
-    const handleUnfavorite = () => { unFavoriteCard(id); };
+    const handleUnfavorite = () => { unFavoriteCard({ id, column }); };
 
     const handleFavorite = () => {
         const optionObject = (v: OptionsObject['variant']): OptionsObject => ({
@@ -184,7 +187,7 @@ function Footer({ id, whoLiked }: FooterProps) {
 
         enqueueSnackbar(message, optionObject('default'));
 
-        favoriteCard(id);
+        favoriteCard({ id, column });
     };
 
     return (
@@ -259,14 +262,11 @@ function FakeMessage({ text }: Pick<CardData, 'text'>) {
 }
 
 export default function BoadCard(data: CardData) {
-    const { board } = useBoard();
+    const { board, isOwner } = useBoard();
 
-    const { id, owner, color, text, whoLiked } = data;
+    const { id, color, text, whoLiked, column } = data;
 
     const { shouldShowCardsAutor, shouldHideCardsInitially } = board.template;
-
-    const { user_id } = userServices.current;
-    const isOwner = owner.id === user_id;
 
     const buildMessage = text.replace(/\/n/g, '\n');
 
@@ -282,13 +282,14 @@ export default function BoadCard(data: CardData) {
                 )
             }
             <CardContent sx={{
+                wordBreak: 'break-all',
                 whiteSpace: 'pre-wrap',
                 pt: isOwner || shouldShowCardsAutor ? 0 : 'auto',
             }}>
                 {shouldHideCardsInitially && !isOwner ? <FakeMessage text={text} /> : buildMessage}
             </CardContent>
             <Divider />
-            <Footer id={id} whoLiked={whoLiked} />
+            <Footer id={id} column={column} whoLiked={whoLiked} />
         </Card>
     );
 }

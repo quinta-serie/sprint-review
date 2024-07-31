@@ -1,0 +1,1 @@
+export { capitalize, slug, getInitials } from './string';
