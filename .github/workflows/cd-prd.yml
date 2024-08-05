@@ -48,9 +48,9 @@ jobs:
     needs: [environment]
     uses: ./.github/workflows/deploy.yml
     with:
+      ENVIRONMENT: PROD
       BUILD_ENV: production
       PATH: dist
       PROJECT: ${{ inputs.project }}
-      HOSTING: sprintretro-c9af7
       FIREBASE_TOKEN: ${{ needs.environment.outputs.firebase_token }}
     secrets: inherit
