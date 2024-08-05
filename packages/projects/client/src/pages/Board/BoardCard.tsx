@@ -78,39 +78,38 @@ function MenuOptions({ open, anchorEl, onClose, ...cardData }: MenuBoardProps) {
     );
 }
 
-interface HeaderProps extends CardData { isOwner: boolean; shouldShowCardsAutor: boolean; }
-function Header({ isOwner, shouldShowCardsAutor, ...cardData }: HeaderProps) {
+interface HeaderProps extends CardData { isOwner: boolean; hideCardsAutor: boolean; }
+function Header({ isOwner, hideCardsAutor, ...cardData }: HeaderProps) {
     const { open, anchorEl, handleClose, handleOpen } = useMenu();
 
-    const { owner, id } = cardData;
+    const { owner } = cardData;
 
     return (
         <>
             <CardHeader
-                sx={{ pb: shouldShowCardsAutor ? 'auto' : 0 }}
+                sx={{ pb: !hideCardsAutor ? 'auto' : 0 }}
                 subheader={
-                    shouldShowCardsAutor
-                        ? (
-                            <Stack direction="row" alignItems="center" spacing={1}>
-                                <Avatar
-                                    alt={owner.name}
-                                    src={owner.name}
-                                    sx={{
-                                        width: 24,
-                                        height: 24,
-                                        fontSize: 12,
-                                        bgcolor: 'rgba(0,0,0,0.3)',
-                                    }}
-                                />
-                                <Typography
-                                    variant="body2"
-                                    color="white"
-                                >
-                                    {owner.name}
-                                </Typography>
-                            </Stack>
-                        )
-                        : ''
+                    !hideCardsAutor && (
+                        <Stack direction="row" alignItems="center" spacing={1}>
+                            <Avatar
+                                alt={owner.name}
+                                src={owner.name}
+                                sx={{
+                                    width: 24,
+                                    height: 24,
+                                    fontSize: 12,
+                                    bgcolor: 'rgba(0,0,0,0.3)',
+                                    color: ({ palette }) => palette.common.white
+                                }}
+                            />
+                            <Typography
+                                variant="body2"
+                                color="white"
+                            >
+                                {owner.name}
+                            </Typography>
+                        </Stack>
+                    )
                 }
                 action={
                     isOwner && (
@@ -266,27 +265,27 @@ export default function BoadCard(data: CardData) {
 
     const { id, color, text, whoLiked, column } = data;
 
-    const { shouldShowCardsAutor, shouldHideCardsInitially } = board.template;
+    const { hideCardsAutor, hideCardsInitially } = board.template;
 
     const buildMessage = text.replace(/\/n/g, '\n');
 
     return (
         <Card sx={{ bgcolor: color, color: (theme) => theme.palette.common.white }}>
             {
-                (shouldShowCardsAutor || isOwner) && (
+                (!hideCardsAutor || isOwner) && (
                     <Header
                         {...data}
                         isOwner={isOwner}
-                        shouldShowCardsAutor={shouldShowCardsAutor}
+                        hideCardsAutor={hideCardsAutor}
                     />
                 )
             }
             <CardContent sx={{
                 wordBreak: 'break-all',
                 whiteSpace: 'pre-wrap',
-                pt: isOwner || shouldShowCardsAutor ? 0 : 'auto',
+                pt: isOwner || !hideCardsAutor ? 0 : 'auto',
             }}>
-                {shouldHideCardsInitially && !isOwner ? <FakeMessage text={text} /> : buildMessage}
+                {hideCardsInitially && !isOwner ? <FakeMessage text={text} /> : buildMessage}
             </CardContent>
             <Divider />
             <Footer id={id} column={column} whoLiked={whoLiked} />

@@ -21,5 +21,10 @@ export default function useKey(data: KeyData, deps: any[] = []) {
     const connectListener = () => { window.addEventListener('keyup', exec, false); };
     const disconnectListener = () => { window.removeEventListener('keyup', exec, false); };
 
-    const exec = (e: KeyboardEvent) => { if (data[e.key]) { data[e.key](); } };
+    const exec = (e: KeyboardEvent) => {
+        if (data[e.key]) {
+            e.preventDefault();
+            data[e.key]();
+        }
+    };
 }

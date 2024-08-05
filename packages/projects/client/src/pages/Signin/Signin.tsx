@@ -45,13 +45,13 @@ export default function Signin() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            background: (theme) => theme.palette.grey[300]
+            background: (theme) => theme.palette.background.default
         }}>
             <Container sx={{ width: 500 }}>
                 <Zoom in>
                     <Box>
                         <Logo style={{ fontSize: 40, textAlign: 'center', marginBottom: 20 }} />
-                        <Card>
+                        <Card sx={{ background: (theme) => theme.palette.background.paper }}>
                             <CardContent>
                                 <Stack spacing={2}>
                                     <Box>
@@ -75,8 +75,8 @@ export default function Signin() {
                             </CardContent>
                         </Card>
                         <Typography
-                            sx={{ mt: 2, textAlign: 'center' }}
                             variant="body2"
+                            sx={{ mt: 2, textAlign: 'center', color: (theme) => theme.palette.text.primary }}
                         >
                             Copyright © 2024, Sprint Retro
                         </Typography>

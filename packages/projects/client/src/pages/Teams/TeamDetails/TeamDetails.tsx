@@ -16,7 +16,7 @@ import useTeamDetails from './useTeamDetails';
 
 type Pages = 'members' | 'settings' | 'boards' | 'invites';
 
-const PAGE_MAP: Array<Pages> = ['boards', 'members', 'settings', 'invites'];
+const PAGE_MAP: Array<Pages> = ['boards', 'members', 'invites', 'settings'];
 
 const getPath = () => location.pathname.split('/').pop() || 'retros';
 const getPathIndex = () => {
@@ -58,16 +58,16 @@ export default function TeamDetails() {
                         onClick={() => goTo('members')}
                     />
                     <Tab
-                        label="Configurações"
-                        iconPosition="start"
-                        icon={<SettingsIcon />}
-                        onClick={() => goTo('settings')}
-                    />
-                    <Tab
                         label="Convites"
                         iconPosition="start"
                         icon={<LocalPostOfficeIcon />}
                         onClick={() => goTo('invites')}
+                    />
+                    <Tab
+                        label="Configurações"
+                        iconPosition="start"
+                        icon={<SettingsIcon />}
+                        onClick={() => goTo('settings')}
                     />
                 </Tabs>
             </Box>

@@ -1,13 +1,11 @@
 import { createContext, useMemo, useState } from 'react';
 
+import { slug } from '@/utils/string';
 import { wait } from '@/utils/promise';
 import { deepCopy } from '@/utils/object';
-import type { BoardData, CardData } from '@/services/board';
-import { defaultTemplate, TemplateData } from '@/services/template';
+import { defaultTemplate } from '@/services/template';
 import { boardServices, COLORS, userServices } from '@/services/core';
-import { slug } from '@/utils/string';
-
-import { TemplateFormData } from '../Teams/TemplateForm';
+import type { BoardData, BoardDataConfig, CardData } from '@/services/board';
 
 type FavoriteCardData = { id: string; column: string };
 
@@ -15,6 +13,7 @@ interface BoardContextConfig {
     board: BoardData;
     loading: boolean;
     isOwner: boolean;
+    removeTimer: () => Promise<void>;
     addCard: (card: CardData) => Promise<void>;
     deleteCard: (cardId: string, columCard: string) => Promise<void>;
     getBoardDetails: (boardId: string) => Promise<void>;
@@ -22,7 +21,7 @@ interface BoardContextConfig {
     mergeCards: (origin: CardData, target: CardData) => void;
     favoriteCard: (dataCard: FavoriteCardData) => Promise<void>;
     unFavoriteCard: (dataCard: FavoriteCardData) => Promise<void>;
-    updateTemplateConfig: (template: TemplateFormData) => Promise<void>;
+    updateTemplateConfig: (template: BoardDataConfig) => Promise<void>;
     editCardText: (cardId: string, cardColumn: string, text: string) => Promise<void>;
     changeCardPosition: (originCard: CardData, position: number, column: string) => void;
 }
@@ -33,6 +32,7 @@ const defaultBoard: BoardData = {
     teamId: '',
     ownerId: '',
     createdAt: '',
+    timer: { isRunning: false },
     description: '',
     status: 'active',
     cards: {},
@@ -48,6 +48,7 @@ export const BoardContext = createContext<BoardContextConfig>({
     changeCardPosition: () => null,
     addCard: () => new Promise(() => null),
     deleteCard: () => new Promise(() => null),
+    removeTimer: () => new Promise(() => null),
     favoriteCard: () => new Promise(() => null),
     editCardText: () => new Promise(() => null),
     unFavoriteCard: () => new Promise(() => null),
@@ -66,13 +67,14 @@ export default function BoardProvider({ children }: BoardProviderProps) {
         loading,
         board,
         isOwner: board.ownerId === user_id,
-        loadBoard: (fn) => setBoard(prev => fn(prev)),
         addCard: (card) => addCard(card),
-        deleteCard: (cardId, columCard) => deleteCard(cardId, columCard),
-        favoriteCard: ({ id, column }) => favoriteCard({ id, column }),
-        unFavoriteCard: ({ id, column }) => unFavoriteCard({ id, column }),
+        removeTimer: () => removeTimer(),
+        loadBoard: (fn) => setBoard(prev => fn(prev)),
         getBoardDetails: (boardId) => getBoardDetails(boardId),
         mergeCards: (origin, target) => mergeCards(origin, target),
+        favoriteCard: ({ id, column }) => favoriteCard({ id, column }),
+        deleteCard: (cardId, columCard) => deleteCard(cardId, columCard),
+        unFavoriteCard: ({ id, column }) => unFavoriteCard({ id, column }),
         updateTemplateConfig: (template) => updateTemplateConfig(template),
         editCardText: (cardId, cardColumn, text) => editCardText(cardId, cardColumn, text),
         changeCardPosition: (cardId, position, column) => changeCardPosition(cardId, position, column),
@@ -161,11 +163,24 @@ export default function BoardProvider({ children }: BoardProviderProps) {
         }).then(() => setBoard(prev => ({ ...prev, cards: boardColumnsUpdated })));
     };
 
-    const updateTemplateConfig = async (template: TemplateFormData) => {
-        const buildTemplateData = { ...board.template, ...template };
+    const updateTemplateConfig = async (config: BoardDataConfig) => {
+        const {
+            name,
+            timer,
+            columns,
+            hideCardsAutor,
+            maxVotesPerCard,
+            maxVotesPerUser,
+            hideCardsInitially,
+        } = config;
+
+        const templateConfig = { name, columns, hideCardsAutor, maxVotesPerCard, maxVotesPerUser, hideCardsInitially };
+
+        const buildTemplateData = { ...board.template, ...templateConfig };
 
         return boardServices.updateBoard({
             ...board,
+            timer: timer || { isRunning: false },
             template: buildTemplateData,
         }).then(() => setBoard(prev => ({ ...prev, template: buildTemplateData })));
     };
@@ -235,6 +250,16 @@ export default function BoardProvider({ children }: BoardProviderProps) {
             ...board,
             cards: boardColumnsUpdated,
         }).catch(() => setBoard(prev => ({ ...prev, cards: cardsFallback })));
+    };
+
+    const removeTimer = async () => {
+        return boardServices.updateBoard({
+            ...board,
+            timer: {
+                isRunning: false,
+                expiryDate: '',
+            },
+        }).catch(() => setBoard(prev => ({ ...prev })));
     };
 
     const changeCardPosition = async (originCard: CardData, position: number, column: string) => {

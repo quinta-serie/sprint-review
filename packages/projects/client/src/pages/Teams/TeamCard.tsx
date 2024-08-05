@@ -15,7 +15,7 @@ import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 
 import type { TeamPopulated } from '@/services/team';
 
-export default function TeamCard({ admin, members, name, id }: TeamPopulated) {
+export default function TeamCard({ admin, members, name, id, state }: TeamPopulated) {
     const navigate = useNavigate();
 
     const goToDetails = () => navigate(`/teams/${id}/boards`);
@@ -23,7 +23,11 @@ export default function TeamCard({ admin, members, name, id }: TeamPopulated) {
     return (
         <Card
             elevation={0}
-            sx={{ border: (theme) => `1px solid ${theme.palette.grey[300]}` }}
+            sx={{
+                border: ({ palette }) => palette.mode === 'light'
+                    ? `1px solid ${palette.grey[300]}`
+                    : `1px solid ${palette.grey[800]}`
+            }}
         >
             <CardActionArea onClick={goToDetails}>
                 <CardHeader title={name} />

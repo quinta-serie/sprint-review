@@ -77,16 +77,17 @@ function Content({ onOpenCreateModal }: ContentProps) {
         filter.filtered.length ?
             <Grid container spacing={2}>
                 {
-                    filter.filtered.map((team, index) =>
-                        <Zoom in
-                            key={team.name}
-                            style={{ transitionDelay: `${100 * (index + 1)}ms` }}
-                        >
-                            <Grid item xs={12} md={6} lg={4}>
-                                <TeamCard {...team} />
-                            </Grid>
-                        </Zoom>
-                    )
+                    filter.filtered
+                        .map((team, index) =>
+                            <Zoom in
+                                key={team.id}
+                                style={{ transitionDelay: `${100 * (index + 1)}ms` }}
+                            >
+                                <Grid item xs={12} md={6} lg={4}>
+                                    <TeamCard {...team} />
+                                </Grid>
+                            </Zoom>
+                        )
                 }
             </Grid>
             : <EmptyContent onOpenCreateModal={onOpenCreateModal} />

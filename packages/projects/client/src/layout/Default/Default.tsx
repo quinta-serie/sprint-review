@@ -108,7 +108,7 @@ const WithOutChildren = ({ btn, goTo, disablePadding = true }: IButtonDetail & {
     const { palette } = useTheme();
 
     const deactiveColor = palette.common.white;
-    const activeColor = palette.secondary.light;
+    const activeColor = palette.secondary.main;
     const matchPath = location.pathname.includes(btn.path);
 
     return (
@@ -116,7 +116,7 @@ const WithOutChildren = ({ btn, goTo, disablePadding = true }: IButtonDetail & {
             <ListItem
                 key={btn.label}
                 disablePadding
-                sx={{ color: matchPath ? activeColor : deactiveColor }}
+                sx={{ color: matchPath ? activeColor : '' }}
             >
                 <ListItemButton
                     onClick={() => goTo(btn.path, btn.internal)}
@@ -206,7 +206,11 @@ function MenuNotification({ anchorEl, open, invites, onClose, onDeleteInviteNoti
                     )
                     : <MenuItem
                         onClick={onClose}
-                        sx={{ border: (theme) => `1px solid ${theme.palette.grey[300]}` }}
+                        sx={{
+                            border: ({ palette }) => palette.mode === 'light'
+                                ? `1px solid ${palette.grey[300]}`
+                                : `1px solid ${palette.grey[800]}`
+                        }}
                     >
                         <Box sx={{
                             display: 'flex',
@@ -285,12 +289,9 @@ export default function Default({ children }: IProps) {
             >
                 <Container
                     maxWidth="lg"
-                    sx={{
-                        mt: 4,
-                        mb: 4,
-                    }}
+                    sx={{ mt: 4, mb: 4 }}
                 >
-                    <Stack direction="row" spacing={2} alignItems="center" justifyContent="flex-end">
+                    <Stack direction="row" spacing={2} alignItems="center" justifyContent="flex-end" sx={{ mb: 4 }}>
                         <IconButton onClick={handleClick}>
                             <Badge badgeContent={invites.length} color="info">
                                 <NotificationsIcon />

@@ -46,23 +46,7 @@ export default function CreateTeamModal({ open, onClose }: CreateTeamModalProps)
                 const { name } = form.values;
                 const { email } = userServices.current;
 
-                teamServices.createTeam({ name, admin: email, members: [email] })
-                    .then(newTeam => {
-                        const { id } = newTeam;
-
-                        enqueueSnackbar('Time criado com sucesso!', { variant: 'success' });
-
-                        addTeam({
-                            id,
-                            name,
-                            admin: userServices.current,
-                            members: [userServices.current],
-                            defaultTemplate: defaultTemplate(id)
-                        });
-                    })
-                    .catch(() => {
-                        enqueueSnackbar('Oops! Tivemos um problema ao criar o time', { variant: 'error' });
-                    })
+                addTeam(name, email)
                     .finally(() => {
                         setLoading(false);
                         onClose();

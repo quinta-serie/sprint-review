@@ -64,7 +64,14 @@ export function CardBoard(board: BoardData) {
     const goTo = () => { navigate(`/board/${board.id}`); };
 
     return (
-        <Card>
+        <Card
+            elevation={0}
+            sx={{
+                border: ({ palette }) => palette.mode === 'light'
+                    ? `1px solid ${palette.grey[300]}`
+                    : `1px solid ${palette.grey[800]}`
+            }}
+        >
             <CardHeader
                 action={
                     <IconButton onClick={handleOpen}>

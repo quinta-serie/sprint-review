@@ -1,8 +1,13 @@
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { createContext, useEffect, useMemo, useState } from 'react';
 
+import { useSnackbar } from 'notistack';
+
+import log from '@/utils/log';
 import useFilter from '@/hooks/useFilter';
+import { removeDuplicate } from '@/utils/array';
 import type { TeamPopulated } from '@/services/team';
+import { defaultTemplate } from '@/services/template';
 import { teamServices, userServices, templateServices } from '@/services/core';
 
 interface TeamsContextConfig {
@@ -14,10 +19,12 @@ interface TeamsContextConfig {
         reset: () => void;
         do: (fn: (team: TeamPopulated) => boolean) => void;
     }
-    addTeam: (team: TeamPopulated) => void;
-    changeSelected: (team: TeamPopulated) => void;
     updateTeam: (team: TeamPopulated) => void;
+    changeSelected: (team: TeamPopulated) => void;
+    updateTeamStatus: (team: TeamPopulated) => void;
     updateTeams: (teams: Array<TeamPopulated>) => void;
+    acceptInvite: (teamId: string) => Promise<void>;
+    addTeam: (name: string, email: string) => Promise<void>;
 }
 
 export const TeamsContext = createContext<TeamsContextConfig>({
@@ -29,29 +36,37 @@ export const TeamsContext = createContext<TeamsContextConfig>({
         reset: () => null,
         do: () => null,
     },
-    addTeam: () => null,
     updateTeam: () => null,
     updateTeams: () => null,
+    updateTeamStatus: () => null,
     changeSelected: () => undefined,
+    addTeam: () => new Promise(() => null),
+    acceptInvite: () => new Promise(() => null),
 });
 
 interface TeamsProviderProps { children: React.JSX.Element; }
 export default function TeamsProvider({ children }: TeamsProviderProps) {
     const location = useLocation();
+    const navigate = useNavigate();
+    const { enqueueSnackbar } = useSnackbar();
     const [loading, setLoading] = useState(true);
     const [myTeams, setMyTeams] = useState<Array<TeamPopulated>>([]);
     const { filtered, filter, reset } = useFilter(myTeams);
     const [selectedTeam, setSelectedTeam] = useState<TeamPopulated>(myTeams[0]);
+
+    const { email } = userServices.current;
 
     const context = useMemo<TeamsContextConfig>(() => ({
         reset,
         loading,
         myTeams,
         selectedTeam,
-        filter: { reset, filtered, do: filter },
-        addTeam: (team) => addTeam(team),
+        filter: { reset, filtered: filtered.filter(t => t.state === 'active'), do: filter },
+        acceptInvite: (teamId) => acceptInvite(teamId),
+        addTeam: (name, email) => addTeam(name, email),
         updateTeams: (teams) => setMyTeams(teams),
         updateTeam: (team) => setMyTeams(myTeams.map(t => t.id === team.id ? team : t)),
+        updateTeamStatus: (team) => updateTeamStatus(team),
         changeSelected: (team) => setSelectedTeam(team),
     }), [myTeams, filtered, selectedTeam, loading]);
 
@@ -75,7 +90,58 @@ export default function TeamsProvider({ children }: TeamsProviderProps) {
             .finally(() => setTimeout(() => { setLoading(false); }, 500));
     };
 
-    const addTeam = (team: TeamPopulated) => { setMyTeams([...myTeams, team]); };
+    const addTeam = async (name: string, email: string) => {
+        return teamServices.createTeam({ name, admin: email, members: [email] })
+            .then(newTeam => {
+                const { id } = newTeam;
+
+                enqueueSnackbar('Time criado com sucesso!', { variant: 'success' });
+
+                setMyTeams([...myTeams, {
+                    id,
+                    name,
+                    state: 'active',
+                    admin: userServices.current,
+                    members: [userServices.current],
+                    defaultTemplate: defaultTemplate(id)
+                }]);
+            })
+            .catch(() => {
+                enqueueSnackbar('Oops! Tivemos um problema ao criar o time', { variant: 'error' });
+            });
+    };
+
+    const acceptInvite = async (teamId: string) => {
+        return teamServices.getTeam(teamId)
+            .then(t => {
+                if (!t) { throw new Error('Team not found'); }
+
+                const mappedMembers = removeDuplicate([...t.members, email]);
+
+                teamServices.updateTeam({ ...t, members: mappedMembers })
+                    .then(async () => {
+                        const populatedTeam = await teamServices.pupulateTeam([t], userServices, templateServices);
+
+                        populatedTeam[0].members.push(userServices.current);
+
+                        setMyTeams([...myTeams, populatedTeam[0]]);
+
+                        enqueueSnackbar(`Você foi adicionado ao time: ${t.name}`, { variant: 'success' });
+                        navigate('/teams');
+                    });
+            })
+            .catch(e => {
+                log.error(e);
+                enqueueSnackbar('Time não encontrado', { variant: 'error' });
+                navigate('/teams');
+            });
+    };
+
+    const updateTeamStatus = (team: TeamPopulated) => {
+        const newTeams = myTeams.filter(t => t.id !== team.id);
+
+        setMyTeams([...newTeams, team]);
+    };
 
     return (
         <TeamsContext.Provider value={context}>

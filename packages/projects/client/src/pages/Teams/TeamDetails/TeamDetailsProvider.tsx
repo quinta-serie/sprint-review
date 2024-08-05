@@ -10,6 +10,8 @@ import type { TeamData, TeamPopulated } from '@/services/team';
 import { defaultTemplate, TemplateWithEditableData, type TemplateData } from '@/services/template';
 import { userServices, teamServices, boardServices, inviteServices, templateServices } from '@/services/core';
 
+import useTeams from '../useTeams';
+
 type Loading = { details: boolean; boards: boolean; invites: boolean; templates: boolean; };
 
 interface TeamDetailsContextConfig {
@@ -26,6 +28,7 @@ interface TeamDetailsContextConfig {
 
     addInvites: (invite: InviteData[]) => void;
 
+    updateTeamState: () => Promise<void>;
     updateTeamName: (name: string) => Promise<void>;
     updateTeamTemplate: (data: TemplateData) => Promise<void>;
     updateBoardStatus: (data: BoardData, status: BoardData['status']) => Promise<void>;
@@ -42,6 +45,7 @@ const defaultTeam: TeamPopulated = {
     id: '',
     name: '',
     members: [],
+    state: 'active',
     admin: defaultUser,
     defaultTemplate: defaultTemplate('')
 };
@@ -61,6 +65,7 @@ export const TeamDetailsContext = createContext<TeamDetailsContextConfig>({
     addInvites: () => null,
 
     updateTeamName: () => new Promise(() => null),
+    updateTeamState: () => new Promise(() => null),
     updateBoardStatus: () => new Promise(() => null),
     updateTeamTemplate: () => new Promise(() => null),
 
@@ -73,6 +78,8 @@ export const TeamDetailsContext = createContext<TeamDetailsContextConfig>({
 
 interface TeamDetailsProviderProps { children: React.JSX.Element; }
 export default function TeamDetailsProvider({ children }: TeamDetailsProviderProps) {
+    const { updateTeamStatus } = useTeams();
+
     const { enqueueSnackbar } = useSnackbar();
 
     const [team, setTeam] = useState<TeamPopulated>(defaultTeam);
@@ -95,6 +102,7 @@ export default function TeamDetailsProvider({ children }: TeamDetailsProviderPro
 
         addInvites: (invites) => setInvites(prev => [...prev, ...invites]),
 
+        updateTeamState: () => updateTeamState(),
         updateTeamName: (name) => updateTeamName(name),
         updateTeamTemplate: (data) => updateTeamTemplate(data),
         updateBoardStatus: (data, status) => updateBoardStatus(data, status),
@@ -152,6 +160,22 @@ export default function TeamDetailsProvider({ children }: TeamDetailsProviderPro
                 setTeam(prev => ({ ...prev, defaultTemplate: data }));
                 enqueueSnackbar('Template editado com sucesso!', { variant: 'success' });
             });
+    };
+
+    const updateTeamState = async () => {
+        const state = 'archived';
+
+        return teamServices.updateTeam({
+            ...team,
+            state,
+            admin: team.admin.email,
+            defaultTemplate: team.defaultTemplate ? team.defaultTemplate.id : '',
+            members: team.members.map(m => m.email),
+        }).then(() => {
+            setTeam(prev => ({ ...prev, state } as TeamPopulated));
+            updateTeamStatus({ ...team, state });
+            enqueueSnackbar(`O time "${team.name}" foi removido!`, { variant: 'success' });
+        });
     };
 
     const updateBoardStatus = async (data: BoardData, status: BoardData['status']) => {

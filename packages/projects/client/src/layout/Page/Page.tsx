@@ -20,7 +20,7 @@ export default function Page({ children, action, title, loading }: PageProps) {
                                     alignItems="center"
                                     justifyContent="space-between"
                                 >
-                                    <Typography variant="h4">{title}</Typography>
+                                    <Typography variant="h4" color="text.primary">{title}</Typography>
                                     {action}
                                 </Box>
                             </Box>

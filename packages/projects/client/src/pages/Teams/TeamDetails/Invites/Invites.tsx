@@ -122,7 +122,12 @@ function WithContent() {
             </Box>
             <Box sx={{ minHeight: 367 }}>
                 <TableContainer elevation={0} component={Paper}>
-                    <Table sx={{ minWidth: 650, border: (theme) => `1px solid ${theme.palette.grey[300]}` }}>
+                    <Table sx={{
+                        minWidth: 650,
+                        border: ({ palette }) => palette.mode === 'light'
+                            ? `1px solid ${palette.grey[300]}`
+                            : `1px solid ${palette.grey[800]}`
+                    }}>
                         <TableBody>
                             {
                                 paginated.map((row) => <TableRowItem key={row.id} {...row} />)
