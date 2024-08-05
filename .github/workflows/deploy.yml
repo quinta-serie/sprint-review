@@ -9,9 +9,6 @@ on:
       PROJECT:
         required: true
         type: string
-      HOSTING:
-        required: true
-        type: string
       BUILD_ENV:
         required: true
         type: string
@@ -61,7 +58,7 @@ jobs:
       - name: Firebase Deploy - ${{ inputs.BUILD_ENV }}
         uses: w9jds/firebase-action@v13.3.0
         with:
-          args: deploy --project=${{ inputs.BUILD_ENV }} --only hosting:${{ inputs.HOSTING }}
+          args: deploy --project=${{ inputs.BUILD_ENV }} --only hosting:${{ secrets.FIREBASE_PROJECT_ID }}
         env:
           FIREBASE_TOKEN: ${{ inputs.FIREBASE_TOKEN }}
           PROJECT_PATH: packages/projects/${{ inputs.PROJECT }}
