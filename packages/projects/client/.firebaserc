@@ -1,0 +1,15 @@
+{
+  "projects": {
+    "production": "sprintretro-c9af7"
+  },
+  "targets": {
+    "prd-mymagicchat": {
+      "hosting": {
+        "sprintretro-c9af7": [
+          "prd-sprintretro"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}
