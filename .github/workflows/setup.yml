@@ -38,7 +38,7 @@ jobs:
           
       - name: Install dependencies
         if: steps.cache-yarn.outputs.cache-hit != 'true'
-        run: make install-immutable
+        run: yarn install --immutable
 
       # - name: Install Cypress
       #   if: steps.cache-cypress.outputs.cache-hit != 'true'
