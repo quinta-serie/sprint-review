@@ -15,14 +15,15 @@ jobs:
   setup:
     uses: ./.github/workflows/setup.yml
     with:
-      ENV: production
+      BUILD_ENV: production
     secrets: inherit
   
   build-project:
     needs: [setup]
     uses: ./.github/workflows/projects.yml
     with:
-      ENV: production
+      ENVIRONMENT: PROD
+      BUILD_ENV: production
       PATH: dist
       PROJECT: ${{ inputs.project }}
       COMMAND: build:prod
@@ -40,14 +41,14 @@ jobs:
       - name: Get Firebase Token
         id: firebase_token
         env:
-          FIREBASE_TOKEN: 1//0hfJzw-OoupOvCgYIARAAGBESNwF-L9IrUFDhjlhBXmpZdTnJE0a-a0apKnD1UtauEslpvR9fwXmZ2EgRinkPCUQ9iEz4MMZt1Es
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
         run: echo "value=$FIREBASE_TOKEN" >> $GITHUB_OUTPUT
 
   deploy-project:
     needs: [environment]
     uses: ./.github/workflows/deploy.yml
     with:
-      ENV: production
+      BUILD_ENV: production
       PATH: dist
       PROJECT: ${{ inputs.project }}
       HOSTING: sprintretro-c9af7

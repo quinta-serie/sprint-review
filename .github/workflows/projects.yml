@@ -3,13 +3,16 @@ name: Build Project
 on:
   workflow_call:
     inputs:
+      ENVIRONMENT:
+        required: true
+        type: string
       PROJECT:
         required: true
         type: string
       COMMAND:
         required: true
         type: string
-      ENV:
+      BUILD_ENV:
         required: true
         type: string
       PATH:
@@ -18,6 +21,16 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    environment: ${{ inputs.ENVIRONMENT }}
+    env:
+      VITE_ID: ${{ secrets.FIREBASE_ID }}
+      VITE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+      VITE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+      VITE_AUTH_DOMAIN: ${{ secrets.FIREBASE_AUTH_DOMAIN }}
+      VITE_STORAGE_BUCKET: ${{ secrets.FIREBASE_STORAGE_BUCKET }}
+      VITE_MEASUREMENT_ID: ${{ secrets.FIREBASE_MEASUREMENT_ID }}
+      VITE_MESSAGING_SENDER_ID: ${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -53,4 +66,4 @@ jobs:
       - name: Build ${{ inputs.PROJECT }}
         if: steps.cache-project.outputs.cache-hit != 'true'
         run: |
-          make run ${{ inputs.PROJECT }} ${{ inputs.COMMAND }};
+          make run ${{ inputs.PROJECT }} ${{ inputs.COMMAND }}

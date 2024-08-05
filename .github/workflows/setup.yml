@@ -3,7 +3,7 @@ name: Setup
 on:
   workflow_call:
     inputs:
-      ENV:
+      BUILD_ENV:
         required: true
         type: string
 
@@ -25,8 +25,8 @@ jobs:
         uses: actions/cache@v3
         with:
           path: "**/node_modules"
-          key: ${{ runner.os }}-setup-${{ inputs.ENV }}-${{ hashFiles('./yarn.lock') }}
-          restore-keys: ${{ runner.os }}-setup-${{ inputs.ENV }}-${{ hashFiles('./yarn.lock') }}
+          key: ${{ runner.os }}-setup-${{ inputs.BUILD_ENV }}-${{ hashFiles('./yarn.lock') }}
+          restore-keys: ${{ runner.os }}-setup-${{ inputs.BUILD_ENV }}-${{ hashFiles('./yarn.lock') }}
         
       # - name: Cache Cypress
       #   id: cache-cypress
