@@ -35,10 +35,8 @@ function MenuNotification({ anchorEl, open, invites, onClose, onDeleteInviteNoti
 
     const handleAccept = (data: InviteData) => {
         toInvite(data.teamId)
-            .then(() => {
-                invite.updateInviteStatus({ ...data, status: 'accepted' })
-                    .then(() => onDeleteInviteNotification(data.id));
-            });
+            .then(() => invite.updateInviteStatus({ ...data, status: 'accepted' }))
+            .then(() => onDeleteInviteNotification(data.id));
     };
 
     return (
