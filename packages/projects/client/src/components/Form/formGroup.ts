@@ -53,7 +53,7 @@ export default class FormGroup<F> {
 
     public validate() {
         Object.keys(this.validator).forEach((key) => {
-            this.controls[key].dirty = true;
+            // this.controls[key].dirty = true;
             this.controls[key].error = this.validator[key](this);
         });
 

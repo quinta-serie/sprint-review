@@ -45,7 +45,6 @@ export default class FormControl<C> {
     public get value(): C { return this._value; }
     public set value(value: C) {
         this._value = value;
-
         this.validate();
     }
 
