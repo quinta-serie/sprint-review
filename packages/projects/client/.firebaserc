@@ -3,7 +3,7 @@
     "production": "sprintretro-c9af7"
   },
   "targets": {
-    "sprintretro-c9af7": {
+    "sprintretro": {
       "hosting": {
         "sprintretro": [
           "sprintretro-prd"
