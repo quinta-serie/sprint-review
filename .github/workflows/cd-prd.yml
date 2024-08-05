@@ -26,7 +26,7 @@ jobs:
       BUILD_ENV: production
       PATH: dist
       PROJECT: ${{ inputs.project }}
-      COMMAND: build:prod
+      COMMAND: build
     secrets: inherit
 
   environment:
