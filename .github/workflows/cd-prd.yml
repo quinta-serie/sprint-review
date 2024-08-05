@@ -29,28 +29,12 @@ jobs:
       COMMAND: build
     secrets: inherit
 
-  environment:
-    needs: [build-project]
-    runs-on: ubuntu-latest
-    outputs:
-      firebase_token: ${{ steps.firebase_token.outputs.value }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Get Firebase Token
-        id: firebase_token
-        env:
-          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
-        run: echo "value=$FIREBASE_TOKEN" >> $GITHUB_OUTPUT
-
   deploy-project:
-    needs: [environment]
+    needs: [build-project]
     uses: ./.github/workflows/deploy.yml
     with:
       ENVIRONMENT: PROD
       BUILD_ENV: production
       PATH: dist
       PROJECT: ${{ inputs.project }}
-      FIREBASE_TOKEN: ${{ needs.environment.outputs.firebase_token }}
     secrets: inherit
