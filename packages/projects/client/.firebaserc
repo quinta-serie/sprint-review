@@ -5,8 +5,8 @@
   "targets": {
     "sprintretro-c9af7": {
       "hosting": {
-        "sprintretro-c9af7": [
-          "prd-sprintretro"
+        "sprintretro": [
+          "sprintretro"
         ]
       }
     }
