@@ -1,29 +1,37 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 import Box from '@mui/material/Box';
 import List from '@mui/material/List';
-import Dialog from '@mui/material/Dialog';
+import Menu from '@mui/material/Menu';
+import Badge from '@mui/material/Badge';
+import Stack from '@mui/material/Stack';
 import Avatar from '@mui/material/Avatar';
 import Divider from '@mui/material/Divider';
 import Tooltip from '@mui/material/Tooltip';
 import MuiDrawer from '@mui/material/Drawer';
+import MenuItem from '@mui/material/MenuItem';
 import ListItem from '@mui/material/ListItem';
 import Collapse from '@mui/material/Collapse';
 import Container from '@mui/material/Container';
-import DialogTitle from '@mui/material/DialogTitle';
+import IconButton from '@mui/material/IconButton';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemAvatar from '@mui/material/ListItemAvatar';
 import { useTheme, styled } from '@mui/material/styles';
+import ListItemButton from '@mui/material/ListItemButton';
 
-import LinkIcon from '@mui/icons-material/Link';
-import ExpandMore from '@mui/icons-material/ExpandMore';
+import EmailIcon from '@mui/icons-material/Email';
 import ExpandLess from '@mui/icons-material/ExpandLess';
+import ExpandMore from '@mui/icons-material/ExpandMore';
+import InventoryIcon from '@mui/icons-material/Inventory';
+import NotificationsIcon from '@mui/icons-material/Notifications';
 
 import Logo from '@/components/Logo';
 import { auth } from '@/services/core';
+import { InviteData } from '@/services/invite';
+import { useToInvite } from '@/pages/ToInvite';
+import { removeDuplicate } from '@/utils/array';
+import { inviteServices, userServices } from '@/services/core';
 
 import { BUTTONS } from './const';
 import { IProps, IButton, IButtonDetail } from './interface';
@@ -100,7 +108,7 @@ const WithOutChildren = ({ btn, goTo, disablePadding = true }: IButtonDetail & {
     const { palette } = useTheme();
 
     const deactiveColor = palette.common.white;
-    const activeColor = palette.secondary.light;
+    const activeColor = palette.secondary.main;
     const matchPath = location.pathname.includes(btn.path);
 
     return (
@@ -108,7 +116,7 @@ const WithOutChildren = ({ btn, goTo, disablePadding = true }: IButtonDetail & {
             <ListItem
                 key={btn.label}
                 disablePadding
-                sx={{ color: matchPath ? activeColor : deactiveColor }}
+                sx={{ color: matchPath ? activeColor : '' }}
             >
                 <ListItemButton
                     onClick={() => goTo(btn.path, btn.internal)}
@@ -132,7 +140,7 @@ const ButtonList = ({ list, onOpenDialog }: { list: Array<IButton>; onOpenDialog
     const goTo = (path: string, internal: boolean) => {
         if (path === 'logout') {
             auth.logout()
-                .then(() => { navigate('/signin'); });
+                .then(() => { navigate('/auth/signin'); });
             return;
         }
 
@@ -159,44 +167,96 @@ const ButtonList = ({ list, onOpenDialog }: { list: Array<IButton>; onOpenDialog
     );
 };
 
-export interface QuestionDialogProps { open: boolean; onClose: () => void; }
-function QuestionDialog({ open, onClose }: QuestionDialogProps) {
-    const handleClose = () => { onClose(); };
-    const handleListItemClick = (value: string) => { console.log('value', value); };
+interface MenuNotificationProps {
+    open: boolean;
+    invites: InviteData[];
+    anchorEl: HTMLElement | null;
+    onClose: () => void;
+    onDeleteInviteNotification: (id: string) => void;
+}
+function MenuNotification({ anchorEl, open, invites, onClose, onDeleteInviteNotification }: MenuNotificationProps) {
+    const { toInvite } = useToInvite();
+
+    const handleAccept = (data: InviteData) => {
+        toInvite(data.teamId)
+            .then(() => inviteServices.updateInviteStatus({ ...data, status: 'accepted' }))
+            .then(() => onDeleteInviteNotification(data.id));
+    };
 
     return (
-        <Dialog onClose={handleClose} open={open}>
-            <DialogTitle>Tutoriais</DialogTitle>
-            <List sx={{ pt: 0 }}>
-                <ListItem disableGutters>
-                    <ListItemButton onClick={() => handleListItemClick('how_to_create_workflow')}>
-                        <ListItemAvatar>
-                            <Avatar>
-                                <LinkIcon />
-                            </Avatar>
-                        </ListItemAvatar>
-                        <ListItemText primary="Como criar uma automação?" />
-                    </ListItemButton>
-                </ListItem>
-                <ListItem disableGutters>
-                    <ListItemButton onClick={() => handleListItemClick('how_to_create_workflow')}>
-                        <ListItemAvatar>
-                            <Avatar>
-                                <LinkIcon />
-                            </Avatar>
-                        </ListItemAvatar>
-                        <ListItemText primary="Onde posso ver minhas automações?" />
-                    </ListItemButton>
-                </ListItem>
-            </List>
-        </Dialog>
+        <Menu
+            anchorEl={anchorEl}
+            id="account-menu"
+            open={open}
+            elevation={1}
+            onClose={onClose}
+            onClick={onClose}
+            transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+            anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+        >
+            {
+                invites.length
+                    ? invites.map(i =>
+                        <MenuItem key={i.id} onClick={() => handleAccept(i)} >
+                            <ListItemIcon>
+                                <EmailIcon />
+                            </ListItemIcon>
+                            Convite para particiar de "{i.teamName}"
+                        </MenuItem>
+                    )
+                    : <MenuItem
+                        onClick={onClose}
+                        sx={{
+                            border: ({ palette }) => palette.mode === 'light'
+                                ? `1px solid ${palette.grey[300]}`
+                                : `1px solid ${palette.grey[800]}`
+                        }}
+                    >
+                        <Box sx={{
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            flexDirection: 'column',
+                            gap: 1,
+                            height: 100
+                        }}>
+                            <InventoryIcon color="disabled" />
+                            Sem notificações
+                        </Box>
+                    </MenuItem>
+            }
+        </Menu >
     );
 }
 
 export default function Default({ children }: IProps) {
-    const [open, setOpen] = useState(false);
+    const [invites, setInvites] = useState<InviteData[]>([]);
+    const { name, email, picture } = userServices.current;
 
-    const toggleDialogQuestion = () => { setOpen(!open); };
+    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+
+    const open = Boolean(anchorEl);
+
+    useEffect(() => {
+        const unsubscribe = inviteServices.subscription(email, (invite) => {
+            const isSent = invite.status === 'sent';
+            const isNotDuplicated = !invites.find(i => i.id === invite.id);
+
+            if (isSent && isNotDuplicated) {
+                setInvites(prev => removeDuplicate([...prev, invite]));
+            }
+        });
+
+        return () => unsubscribe();
+    }, []);
+    // }, [invites]);
+
+    const handleDeleteInviteNotification = (id: string) => {
+        setInvites(prev => prev.filter(i => i.id !== id));
+    };
+
+    const handleClick = (event: React.MouseEvent<HTMLElement>) => { setAnchorEl(event.currentTarget); };
+    const handleClose = () => { setAnchorEl(null); };
 
     return (
         <Box sx={{ display: 'flex' }}>
@@ -206,12 +266,13 @@ export default function Default({ children }: IProps) {
                         <Logo
                             tag="h2"
                             color="contrast"
+                            onlyInitials
                             style={{ textAlign: 'center' }}
                         />
                     </Box>
                     <ButtonList list={BUTTONS.main} />
                     <Divider />
-                    <ButtonList list={BUTTONS.support} onOpenDialog={toggleDialogQuestion} />
+                    <ButtonList list={BUTTONS.support} />
                 </nav>
                 <nav aria-label="secondary navigation options">
                     <Divider />
@@ -228,15 +289,28 @@ export default function Default({ children }: IProps) {
             >
                 <Container
                     maxWidth="lg"
-                    sx={{
-                        mt: 4,
-                        mb: 4,
-                    }}
+                    sx={{ mt: 4, mb: 4 }}
                 >
+                    <Stack direction="row" spacing={2} alignItems="center" justifyContent="flex-end" sx={{ mb: 4 }}>
+                        <IconButton onClick={handleClick}>
+                            <Badge badgeContent={invites.length} color="info">
+                                <NotificationsIcon />
+                            </Badge>
+                        </IconButton>
+                        <MenuNotification
+                            open={open}
+                            invites={invites}
+                            anchorEl={anchorEl}
+                            onClose={handleClose}
+                            onDeleteInviteNotification={handleDeleteInviteNotification}
+                        />
+                        <Tooltip title={name}>
+                            <Avatar alt={name} src={picture} />
+                        </Tooltip>
+                    </Stack>
                     {children}
                 </Container>
             </Box>
-            <QuestionDialog open={open} onClose={toggleDialogQuestion} />
         </Box>
     );
 }

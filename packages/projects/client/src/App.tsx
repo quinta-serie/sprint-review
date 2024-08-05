@@ -2,21 +2,15 @@ import { Outlet } from 'react-router-dom';
 
 import { SnackbarProvider, closeSnackbar } from 'notistack';
 
-import type { PaletteMode } from '@mui/material';
 import IconButton from '@mui/material/IconButton';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
 
 import CloseIcon from '@mui/icons-material/Close';
 
-import Layout from '@/layout/Default';
-import { TeamProvider } from '@/pages/Teams';
+import PersonalThemeProvider from '@/components/PersonalTheme';
 
-import theme from './theme';
-
-function App() {
-    const getTokens = (mode: PaletteMode) => { return createTheme(theme[mode]); };
+export default function App() {
     return (
-        <ThemeProvider theme={getTokens('light')}>
+        <PersonalThemeProvider>
             <SnackbarProvider
                 maxSnack={3}
                 hideIconVariant={false}
@@ -32,15 +26,8 @@ function App() {
                     </IconButton>
                 )}
             >
-
-                <TeamProvider>
-                    <Layout>
-                        <Outlet />
-                    </Layout>
-                </TeamProvider>
+                <Outlet />
             </SnackbarProvider>
-        </ThemeProvider >
+        </PersonalThemeProvider >
     );
 }
-
-export default App;

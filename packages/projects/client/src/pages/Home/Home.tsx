@@ -37,7 +37,9 @@ function TemplateCards(template: HotTemplates<State>) {
                 sx={{
                     height: '90%',
                     transition: 'all 0.3s',
-                    border: (theme) => `1px solid ${theme.palette.grey[300]}`,
+                    border: ({ palette }) => palette.mode === 'light'
+                        ? `1px solid ${palette.grey[300]}`
+                        : `1px solid ${palette.grey[800]}`
                 }}
             >
                 <CardActionArea sx={{ height: '100%' }}>
@@ -64,12 +66,15 @@ function TemplateCards(template: HotTemplates<State>) {
 }
 
 function CreateRetroCard() {
+
     return (
         <Stack spacing={2}>
-            <Typography variant="h5">
-                Criar retrô
-            </Typography>
-            <Card elevation={0} sx={{ border: (theme) => `1px solid ${theme.palette.grey[300]}` }}>
+            <Typography variant="h5" color="text.primary">Criar retrô</Typography>
+            <Card elevation={0} sx={{
+                border: ({ palette }) => palette.mode === 'light'
+                    ? `1px solid ${palette.grey[300]}`
+                    : `1px solid ${palette.grey[800]}`
+            }}>
                 <CardContent>
                     <Typography variant="h6" gutterBottom>
                         Templates recomendados
@@ -100,16 +105,16 @@ function CreateRetroCard() {
 function RecentRetros() {
     return (
         <Stack spacing={2}>
-            <Typography variant="h5">
-                Retrôs recentes
-            </Typography>
+            <Typography variant="h5" color="text.primary">Retrôs recentes</Typography>
             <Box>
                 <Grid container spacing={2}>
                     <Grid item xs={6} md={4} lg={3}>
                         <Card
                             elevation={0}
                             sx={{
-                                border: (theme) => `1px solid ${theme.palette.grey[300]}`,
+                                border: ({ palette }) => palette.mode === 'light'
+                                    ? `1px solid ${palette.grey[300]}`
+                                    : `1px solid ${palette.grey[800]}`
                             }}
                         >
                             <CardActionArea>

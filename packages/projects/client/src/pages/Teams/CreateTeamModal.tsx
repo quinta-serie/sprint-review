@@ -14,8 +14,9 @@ import CircularProgress from '@mui/material/CircularProgress';
 import DialogContentText from '@mui/material/DialogContentText';
 import type { TransitionProps } from '@mui/material/transitions';
 
-import { team, user } from '@/services/core';
+import { teamServices, userServices } from '@/services/core';
 import Form, { useForm, Control, FormControl } from '@/components/Form';
+import { defaultTemplate } from '@/services/template';
 
 import useTeams from './useTeams';
 
@@ -43,19 +44,9 @@ export default function CreateTeamModal({ open, onClose }: CreateTeamModalProps)
                 setLoading(true);
 
                 const { name } = form.values;
-                const { email } = user.current;
+                const { email } = userServices.current;
 
-                team.createTeam({ name, admin: email, members: [email] })
-                    .then(newTeam => {
-                        const { id } = newTeam;
-
-                        enqueueSnackbar('Time criado com sucesso!', { variant: 'success' });
-
-                        addTeam({ name, admin: user.current, members: [user.current], id });
-                    })
-                    .catch(() => {
-                        enqueueSnackbar('Oops! Tivemos um problema ao criar o time', { variant: 'error' });
-                    })
+                addTeam(name, email)
                     .finally(() => {
                         setLoading(false);
                         onClose();

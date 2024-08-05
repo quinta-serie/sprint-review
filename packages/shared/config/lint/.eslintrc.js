@@ -43,6 +43,7 @@ module.exports = {
                     'module',
                     '/^@mui/(?!icons-material)/',
                     '/^@mui/icons-material/',
+                    '/^@(?!\/)/',
                     '/^@sprint-review/',
                     '/^@(?!sprint-review)/',
                     ['parent', 'sibling', 'index'],

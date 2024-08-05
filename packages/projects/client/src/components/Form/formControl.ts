@@ -45,7 +45,6 @@ export default class FormControl<C> {
     public get value(): C { return this._value; }
     public set value(value: C) {
         this._value = value;
-
         this.validate();
     }
 
@@ -55,7 +54,6 @@ export default class FormControl<C> {
             cpf: maskCpf,
         };
 
-        // @ts-ignore
         if (mask[this.type]) { return mask[this.type](this.value); }
 
         return this.value;

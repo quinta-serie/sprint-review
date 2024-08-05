@@ -1,20 +1,24 @@
 import { initializeApp } from 'firebase/app';
-import { getAnalytics } from 'firebase/analytics';
+// import { getAnalytics } from 'firebase/analytics';
 import { getFirestore } from 'firebase/firestore';
-import { getRemoteConfig } from 'firebase/remote-config';
+// import { getRemoteConfig } from 'firebase/remote-config';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
 
 import DB from './db';
 import Auth from './auth';
 import User from './user';
 import Team from './team';
+import Board from './board';
 import Invite from './invite';
+import Template from './template';
 
 // VARIABLES
 
 export const url = {
     origin: window.location.origin
 };
+
+export const COLORS = ['#2C4AC9', '#FF772A', '#A63EB9', '#009886'];
 
 // FIREBASE
 const app = initializeApp({
@@ -31,8 +35,8 @@ const app = initializeApp({
 const firebaseAuth = getAuth(app);
 const googleProvider = new GoogleAuthProvider();
 
-const config = getRemoteConfig(app);
-const analytics = getAnalytics(app);
+// const config = getRemoteConfig(app);
+// const analytics = getAnalytics(app);
 
 export const auth = new Auth({
     googleAuth: () => signInWithPopup(firebaseAuth, googleProvider),
@@ -42,6 +46,8 @@ export const auth = new Auth({
 export const db = new DB(getFirestore(app));
 
 // ENTITY SERVICES
-export const user = new User(db);
-export const team = new Team(db);
-export const invite = new Invite(db);
+export const userServices = new User(db);
+export const teamServices = new Team(db);
+export const boardServices = new Board(db);
+export const inviteServices = new Invite(db);
+export const templateServices = new Template(db);

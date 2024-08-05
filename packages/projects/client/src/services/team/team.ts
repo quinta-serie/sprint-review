@@ -2,6 +2,7 @@ import DB from '@/services/db';
 import { uuid } from '@/utils/uuid';
 
 import User, { type UserData } from '../user';
+import Template, { type TemplateData } from '../template';
 import type { TeamData, TeamPopulated } from './interface';
 
 export default class Team {
@@ -13,7 +14,10 @@ export default class Team {
         return this.db.getItem<TeamData>({
             path: Team.PATH,
             pathSegments: [],
-            filters: [{ field: 'id', operator: '==', value: teamId }],
+            filters: [
+                { field: 'id', operator: '==', value: teamId },
+                { field: 'state', operator: '==', value: 'active' }
+            ],
         });
     }
 
@@ -21,17 +25,20 @@ export default class Team {
         return this.db.getList<TeamData>({
             path: Team.PATH,
             pathSegments: [],
-            filters: [{ field: 'members', operator: 'array-contains', value: userEmail }],
+            filters: [
+                { field: 'members', operator: 'array-contains', value: userEmail },
+                { field: 'state', operator: '==', value: 'active' }
+            ],
         });
     }
 
-    async createTeam(data: Omit<TeamData, 'id'>) {
+    async createTeam(data: Omit<TeamData, 'id' | 'state'>) {
         const id = uuid();
 
-        return this.db.setItem({
+        return this.db.setItem<TeamData>({
             path: Team.PATH,
             pathSegments: [id],
-            data: { ...data, id },
+            data: { ...data, id, state: 'active' },
         }).then(() => ({ ...data, id }));
     }
 
@@ -43,23 +50,19 @@ export default class Team {
         });
     }
 
-    async pupulateTeam(teams: TeamData[], user: User) {
-        const users = await Promise.all(
+    async pupulateTeam(teams: TeamData[], user: User, template: Template): Promise<TeamPopulated[]> {
+        return Promise.all(
             teams.map(async team => {
-                return await Promise.all(team.members.map(email => {
+                const members = await Promise.all(team.members.map(email => {
                     return user.getUserByEmail(email);
-                }));
+                })) as UserData[];
+
+                const admin = await user.getUserByEmail(team.admin) as UserData;
+
+                const defaultTemplate = await template.getTeamDefaultTemplate(team.id) as TemplateData;
+
+                return { ...team, members, admin, defaultTemplate };
             })
         );
-
-        const admin = await Promise.all(teams.map(team => user.getUserByEmail(team.admin)));
-
-        return teams.map<TeamPopulated>((team) => ({
-            ...team,
-            admin: admin.find((user) => user?.email === team.admin) as UserData,
-            members: team.members.map((email) => {
-                return users.flat().find((user) => user?.email === email) as UserData;
-            }),
-        }));
     }
 }

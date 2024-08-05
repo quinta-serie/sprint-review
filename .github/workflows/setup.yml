@@ -1,0 +1,45 @@
+name: Setup
+
+on:
+  workflow_call:
+    inputs:
+      ENV:
+        required: true
+        type: string
+
+jobs:
+  install:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install NodeJS
+        uses: actions/setup-node@v3
+        with:
+          node-version: "20"
+          cache: "yarn"
+
+      - name: Cache node_modules
+        id: cache-yarn
+        uses: actions/cache@v3
+        with:
+          path: "**/node_modules"
+          key: ${{ runner.os }}-setup-${{ inputs.ENV }}-${{ hashFiles('./yarn.lock') }}
+          restore-keys: ${{ runner.os }}-setup-${{ inputs.ENV }}-${{ hashFiles('./yarn.lock') }}
+        
+      # - name: Cache Cypress
+      #   id: cache-cypress
+      #   uses: actions/cache@v3
+      #   with:
+      #     path: "~/.cache/Cypress"
+      #     key: cypress-cache-${{ runner.os }}-${{ hashFiles('./yarn.lock') }}
+      #     restore-keys: cypress-cache-${{ runner.os }}-${{ hashFiles('./yarn.lock') }}
+          
+      - name: Install dependencies
+        if: steps.cache-yarn.outputs.cache-hit != 'true'
+        run: make install-immutable
+
+      # - name: Install Cypress
+      #   if: steps.cache-cypress.outputs.cache-hit != 'true'
+      #   run: yarn add cypress

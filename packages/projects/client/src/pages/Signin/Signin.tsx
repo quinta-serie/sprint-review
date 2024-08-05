@@ -11,7 +11,8 @@ import CardContent from '@mui/material/CardContent';
 
 import GoogleIcon from '@mui/icons-material/Google';
 
-import { auth, user } from '@/services/core';
+import Logo from '@/components/Logo';
+import { auth, userServices } from '@/services/core';
 
 export default function Signin() {
     const navigate = useNavigate();
@@ -24,16 +25,16 @@ export default function Signin() {
     };
 
     const verifyUser = (redirect: () => void) => {
-        const { email } = user.current;
+        const { email } = userServices.current;
 
-        user.getUserByEmail(email)
+        userServices.getUserByEmail(email)
             .then(current => {
                 if (current) {
                     redirect();
                     return;
                 }
 
-                user.createUser()
+                userServices.createUser()
                     .then(() => redirect());
             });
     };
@@ -44,12 +45,13 @@ export default function Signin() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            background: (theme) => theme.palette.grey[300]
+            background: (theme) => theme.palette.background.default
         }}>
             <Container sx={{ width: 500 }}>
                 <Zoom in>
                     <Box>
-                        <Card>
+                        <Logo style={{ fontSize: 40, textAlign: 'center', marginBottom: 20 }} />
+                        <Card sx={{ background: (theme) => theme.palette.background.paper }}>
                             <CardContent>
                                 <Stack spacing={2}>
                                     <Box>
@@ -73,8 +75,8 @@ export default function Signin() {
                             </CardContent>
                         </Card>
                         <Typography
-                            sx={{ mt: 2, textAlign: 'center' }}
                             variant="body2"
+                            sx={{ mt: 2, textAlign: 'center', color: (theme) => theme.palette.text.primary }}
                         >
                             Copyright © 2024, Sprint Retro
                         </Typography>

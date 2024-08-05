@@ -10,15 +10,20 @@ export default class User {
 
     constructor(private db: DB) { }
 
-    get current(): UserData {
-        const data = decode<UserData>(this.cookies.get('access_token'));
+    get current() {
+        try {
+            const data = decode<UserData>(this.cookies.get('access_token'));
 
-        return {
-            name: data.name,
-            email: data.email,
-            picture: data.picture,
-            user_id: data.user_id,
-        };
+            return {
+                name: data.name,
+                email: data.email,
+                picture: data.picture,
+                user_id: data.user_id,
+            };
+        } catch (error) {
+            window.location.href = '/auth';
+            return { name: '', email: '', picture: '', user_id: '' };
+        }
     }
 
     getUserByEmail(email: string) {

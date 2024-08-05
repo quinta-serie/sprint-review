@@ -1,8 +1,8 @@
 import FormControl from './formControl';
 
-export type AbstractControl<Form> = { [key in keyof Form]: FormControl<Form[key]> }
+export type AbstractControl<T> = { [key in keyof T]: FormControl<T[key]> }
 
-export interface Validator<T> { [x: string]: (form: FormGroup<T>) => void; }
+export type Validator<T> = { [key in keyof Partial<T>]: (form: FormGroup<T>) => string | undefined; }
 export interface Handle<T> { change?: (form: FormGroup<T>) => void; submit?: (form: FormGroup<T>) => void; }
 
 export default class FormGroup<F> {
@@ -14,10 +14,8 @@ export default class FormGroup<F> {
     constructor(
         public controls: AbstractControl<F>,
         public handle: Handle<F> = {},
-        public validator: Validator<F> = {}
-    ) {
-        this.validate();
-    }
+        public validator: Validator<F> = {} as Validator<F>
+    ) { this.validate(); }
 
     public get update() { return this._update; }
     public set update(fn: (values: Partial<F>) => any) {
@@ -35,16 +33,16 @@ export default class FormGroup<F> {
         const values = {};
 
         this.eachControl((control, key) => ({ [key as string]: control.value }))
-            // @ts-ignore
             .forEach(control => { for (const prop in control) { values[prop] = control[prop]; } });
 
         return values as F;
     }
 
     private eachControl(fn: (control: FormControl<F>, key?: string) => any) {
-        // @ts-ignore
         return Object.keys(this.controls).map(k => fn(this.controls[k], k));
     }
+
+    public submit() { this.isValid && this.handle.submit && this.handle.submit(this); }
 
     public setValues(partialForm: Partial<F>) { this.update(partialForm); }
 
@@ -54,7 +52,11 @@ export default class FormGroup<F> {
     }
 
     public validate() {
-        Object.keys(this.validator).forEach(key => { this.validator[key](this); });
+        Object.keys(this.validator).forEach((key) => {
+            // this.controls[key].dirty = true;
+            this.controls[key].error = this.validator[key](this);
+        });
+
         this.isValid = !this.errors.length;
     }
 }

@@ -1,0 +1,9 @@
+export { default as rock } from './rock';
+export { default as quick } from './quick';
+export { default as cinema } from './cinema';
+export { default as freedom } from './freedom';
+export { default as bookstar } from './bookstar';
+export { default as exchange } from './exchange';
+export { default as original } from './original';
+export { default as lifereal } from './lifereal';
+export { default as delicious } from './delicious';

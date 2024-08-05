@@ -1,33 +1,46 @@
-import { useState } from 'react';
-
-import { useSnackbar } from 'notistack';
+import { forwardRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
+import Slide from '@mui/material/Slide';
 import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
 import Divider from '@mui/material/Divider';
-import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import { TransitionProps } from '@mui/material/transitions';
 import CircularProgress from '@mui/material/CircularProgress';
-import Switch from '@mui/material/Switch';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import MuiFormGroup from '@mui/material/FormGroup';
 
 import DeleteIcon from '@mui/icons-material/Delete';
 
-import { team } from '@/services/core';
 import TabPage from '@/layout/TabPage';
+import { defaultTemplate } from '@/services/template';
 import Form, { Control, FormControl, useForm } from '@/components/Form';
 
 import useTeams from '../../useTeams';
+import useTeamDetails from '../useTeamDetails';
+import TemplateForm, { useTemplateForm, type TemplateFormData } from '../../TemplateForm';
+
+const Transition = forwardRef(function Transition(
+    props: TransitionProps & {
+        children: React.ReactElement<any, any>;
+    },
+    ref: React.Ref<unknown>,
+) {
+    return <Slide direction="up" ref={ref} {...props} />;
+});
 
 interface ZoneProps { title: string; subtitle: string; children: React.JSX.Element; }
 function Zone({ title, subtitle, children }: ZoneProps) {
     return (
         <Stack spacing={2}>
-            <Typography variant="h5">{title}</Typography>
+            <Typography variant="h5" color="text.primary">{title}</Typography>
 
-            <Typography variant="subtitle2">{subtitle}</Typography>
+            <Typography variant="subtitle2" color="text.primary">{subtitle}</Typography>
 
             {children}
         </Stack>
@@ -43,100 +56,178 @@ function Loading() {
 }
 
 function BasicInfo() {
-    const { enqueueSnackbar } = useSnackbar();
-    const { selectedTeam, updateTeam } = useTeams();
+    const { team, updateTeamName } = useTeamDetails();
 
     const [loading, setLoading] = useState(false);
 
     const [formGroup] = useForm<{ name: string; }>({
         form: {
-            name: new FormControl({ value: selectedTeam?.name, required: true })
+            name: new FormControl({ value: team.name, required: true })
         },
         handle: {
             submit: (form) => {
                 const { name } = form.values;
-                const newTeam = { ...selectedTeam, name };
 
                 setLoading(true);
 
-                team.updateTeam({
-                    ...newTeam,
-                    name,
-                    admin: newTeam?.admin.email,
-                    members: newTeam?.members.map(m => m.email)
-                }).then(() => {
-                    setTimeout(() => {
-                        updateTeam(newTeam);
-                        enqueueSnackbar('Nome do time atualizado!', { variant: 'success' });
-                        setLoading(false);
-                    }, 500);
-                });
+                updateTeamName(name)
+                    .then(() => {
+                        setTimeout(() => { setLoading(false); }, 500);
+                    });
             }
         }
-    }, [selectedTeam]);
+    }, [team]);
 
     return (
         <Zone
-            title="Informações Básicas"
+            title="Informações"
             subtitle="Atualize as informações básicas do seu time."
         >
             <Form formGroup={formGroup}>
-                <Box sx={{ display: 'flex', gap: 2 }}>
-                    <Control controlName="name" >
-                        <TextField
-                            variant="outlined"
-                            size="small"
+                <Stack spacing={2} sx={{ maxWidth: 350 }}>
+                    <Box>
+                        <Control controlName="name" >
+                            <TextField
+                                variant="outlined"
+                                size="small"
+                                disabled={loading}
+                                defaultValue={team.name}
+                                fullWidth
+                            />
+                        </Control>
+                    </Box>
+                    <Box>
+                        <Button
+                            type="submit"
+                            color="secondary"
+                            variant="contained"
                             disabled={loading}
-                            defaultValue={selectedTeam?.name}
-                            sx={{ width: 300 }}
-                        />
-                    </Control>
-                    <Button
-                        type="submit"
-                        color="secondary"
-                        variant="contained"
-                        disabled={loading}
-                    >
-                        {
-                            loading
-                                ? <CircularProgress size={24} />
-                                : 'Atualizar Nome'
-                        }
-                    </Button>
-                </Box>
+                        >
+                            {
+                                loading
+                                    ? <CircularProgress size={24} />
+                                    : 'Atualizar Nome'
+                            }
+                        </Button>
+                    </Box>
+                </Stack>
             </Form>
         </Zone>
 
     );
 }
 
-function DefaultBoardConfig() {
-    // const [] = useForm({
+function DefaultBoardTeamplateConfig() {
+    const [loading, setLoading] = useState(false);
+    const { team, createTeamTemplate, updateTeamTemplate } = useTeamDetails();
 
-    // });
+    const submit = (data: TemplateFormData) => {
+        setLoading(true);
+        const newTemplate = { ...data, teamId: team.id, isDefault: true };
+
+        if (team.defaultTemplate) {
+            updateTeamTemplate({ ...newTemplate, id: team.defaultTemplate.id })
+                .finally(() => setTimeout(() => { setLoading(false); }, 500));
+            return;
+        }
+
+        createTeamTemplate(newTemplate)
+            .finally(() => setTimeout(() => { setLoading(false); }, 500));
+    };
+
+    const templateFormGroup = useTemplateForm(defaultTemplate(team.id), submit);
 
     return (
         <Zone
             title="Configurações do Board Padrão"
             subtitle="Personalize as configurações padrão do seu board."
         >
-            <MuiFormGroup>
-                <FormControlLabel control={<Switch />} label="Ocultar cards inicialmente" />
-                <FormControlLabel control={<Switch />} label="Um voto por card" />
-                <FormControlLabel control={<Switch />} label="Mostrar autor do card" />
-            </MuiFormGroup>
+            <Box sx={{ maxWidth: 350 }}>
+                <TemplateForm formGroup={templateFormGroup}>
+                    <Box>
+                        <Button
+                            type="submit"
+                            color="secondary"
+                            variant="contained"
+                            disabled={loading}
+                        >
+                            {loading ? <CircularProgress size={20} color="inherit" /> : 'Atualizar Template'}
+                        </Button>
+                    </Box>
+                </TemplateForm>
+            </Box>
         </Zone>
     );
 }
 
+interface ExcludeTeamDialogProps { open: boolean; onClose: () => void; }
+function ExcludeTeamDialog({ open, onClose }: ExcludeTeamDialogProps) {
+    const navigate = useNavigate();
+    const { team, updateTeamState } = useTeamDetails();
+
+    const [formGroup] = useForm<{ name: string }>({
+        form: {
+            name: new FormControl({ value: '', required: true })
+        },
+        handle: {
+            submit: () => {
+                updateTeamState()
+                    .then(() => { navigate('/teams'); });
+            }
+        },
+        validator: {
+            name: (form) => {
+                const { name } = form.values;
+
+                if (!name) { return 'Este é um campo obrigatório'; }
+                if (name !== team.name) { return 'Nome inválido'; }
+            }
+        }
+    }, []);
+
+    return (
+        <Dialog
+            fullWidth
+            keepMounted
+            open={open}
+            maxWidth="sm"
+            onClose={onClose}
+            TransitionComponent={Transition}
+        >
+            <DialogTitle>Cuidado! Essa é uma ação irreversível</DialogTitle>
+            <Form formGroup={formGroup}>
+                <DialogContent>
+                    <Control controlName="name">
+                        <TextField
+                            fullWidth
+                            variant="outlined"
+                            label="Digite o nome do time para confirmar"
+                            error={formGroup.controls.name.isInvalid}
+                            helperText={formGroup.controls.name.isInvalid && formGroup.controls.name.error}
+                        />
+                    </Control>
+                </DialogContent>
+                <DialogActions>
+                    <Button variant="outlined" onClick={onClose}>Cancelar</Button>
+                    <Button type="submit" variant="contained" color="error">Excluir</Button>
+                </DialogActions>
+            </Form>
+        </Dialog>
+    );
+}
+
 function Content() {
+    const [open, setOpen] = useState(false);
+
+    const toggleDialog = () => setOpen(!open);
+
     return (
         <Stack spacing={2}>
             <BasicInfo />
 
             <Divider />
 
-            <DefaultBoardConfig />
+            <DefaultBoardTeamplateConfig />
 
             <Divider />
 
@@ -149,12 +240,13 @@ function Content() {
                         color="error"
                         variant="outlined"
                         startIcon={<DeleteIcon />}
-                        onClick={console.log}
+                        onClick={toggleDialog}
                     >
                         Excluir Time
                     </Button>
                 </Box>
             </Zone>
+            <ExcludeTeamDialog open={open} onClose={toggleDialog} />
         </Stack>
     );
 }

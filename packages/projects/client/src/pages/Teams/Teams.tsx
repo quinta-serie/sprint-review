@@ -70,26 +70,24 @@ function EmptyContent({ onOpenCreateModal }: EmptyContentProps) {
 }
 
 interface ContentProps { onOpenCreateModal: () => void; onAddMember: (team: TeamPopulated) => void; }
-function Content({ onOpenCreateModal, onAddMember }: ContentProps) {
+function Content({ onOpenCreateModal }: ContentProps) {
     const { filter } = useTeams();
 
     return (
         filter.filtered.length ?
             <Grid container spacing={2}>
                 {
-                    filter.filtered.map((team, index) =>
-                        <Zoom in
-                            key={team.name}
-                            style={{ transitionDelay: `${100 * (index + 1)}ms` }}
-                        >
-                            <Grid item xs={12} md={6} lg={4}>
-                                <TeamCard
-                                    {...team}
-                                    onAddMember={onAddMember}
-                                />
-                            </Grid>
-                        </Zoom>
-                    )
+                    filter.filtered
+                        .map((team, index) =>
+                            <Zoom in
+                                key={team.id}
+                                style={{ transitionDelay: `${100 * (index + 1)}ms` }}
+                            >
+                                <Grid item xs={12} md={6} lg={4}>
+                                    <TeamCard {...team} />
+                                </Grid>
+                            </Zoom>
+                        )
                 }
             </Grid>
             : <EmptyContent onOpenCreateModal={onOpenCreateModal} />

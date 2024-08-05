@@ -1,0 +1,56 @@
+name: Build Project
+
+on:
+  workflow_call:
+    inputs:
+      PROJECT:
+        required: true
+        type: string
+      COMMAND:
+        required: true
+        type: string
+      ENV:
+        required: true
+        type: string
+      PATH:
+        required: true
+        type: string
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install NodeJS
+        uses: actions/setup-node@v3
+        with:
+          node-version: "20"
+          cache: "yarn"
+
+      - name: Cache node_modules
+        uses: actions/cache@v3
+        with:
+          path: "**/node_modules"
+          key: ${{ runner.os }}-setup-${{ inputs.ENV }}-${{ hashFiles('./yarn.lock') }}
+
+      # - name: Cache Dependencies
+      #   uses: actions/cache@v3
+      #   with:
+      #     path: |
+      #       ${{ github.workspace }}/packages/*/*/dist
+      #     key: ${{ runner.os }}-dependencies-${{ inputs.ENV }}-${{ github.sha }}
+
+      - name: Cache ${{ inputs.PROJECT }}
+        id: cache-project
+        uses: actions/cache@v3
+        with:
+          path: |
+            ${{ github.workspace }}/packages/projects/${{ inputs.PROJECT }}/${{ inputs.PATH }}
+          key: ${{ runner.os }}-project-${{ inputs.PROJECT }}-${{ inputs.ENV }}-${{ github.sha }}
+          restore-keys: ${{ runner.os }}-project-${{ inputs.PROJECT }}-${{ inputs.ENV }}-${{ github.sha }}
+
+      - name: Build ${{ inputs.PROJECT }}
+        if: steps.cache-project.outputs.cache-hit != 'true'
+        run: |
+          make ${{ inputs.COMMAND }};

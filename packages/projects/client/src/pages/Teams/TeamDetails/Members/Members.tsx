@@ -33,14 +33,13 @@ import DeleteIcon from '@mui/icons-material/Delete';
 
 import log from '@/utils/log';
 import TabPage from '@/layout/TabPage';
-import { team } from '@/services/core';
 import debounce from '@/utils/debounce';
 import useFilter from '@/hooks/useFilter';
 import type { UserData } from '@/services/user';
 import type { TeamPopulated } from '@/services/team';
 import Form, { Control, useForm, FormControl } from '@/components/Form';
 
-import useTeams from '../../useTeams';
+import useTeamDetails from '../useTeamDetails';
 
 const Transition = forwardRef(function Transition(
     props: TransitionProps & {
@@ -54,48 +53,27 @@ const Transition = forwardRef(function Transition(
 interface DeleteMemberModalProps { open: boolean; selectedMember?: UserData; onClose: () => void; }
 function DeleteMemberModal({ open, selectedMember, onClose }: DeleteMemberModalProps) {
     const [loading, setLoading] = useState(false);
-    const { selectedTeam, myTeams, updateTeams } = useTeams();
+    const { team, deleteMember } = useTeamDetails();
 
     const [formGroup] = useForm<{ email: string }>({
         form: {
-            email: new FormControl({ value: '' })
+            email: new FormControl({ value: '', type: 'email' })
         },
         handle: {
             submit: (form) => {
-                if (!selectedTeam) { return; }
+                if (!team) { return; }
 
                 setLoading(true);
 
-                const { values } = form;
+                const { email } = form.values;
 
-                team.updateTeam({
-                    ...selectedTeam,
-                    admin: selectedTeam.admin.email,
-                    members: selectedTeam.members
-                        .filter(m => m.email !== values.email)
-                        .map(m => m.email)
-                })
+                deleteMember(email)
                     .then(() => {
                         enqueueSnackbar('Membro excluído com sucesso.', { variant: 'success' });
-
-                        const teamWithOutMember = myTeams.map(t => {
-                            if (t.id === selectedTeam.id) {
-                                return {
-                                    ...selectedTeam,
-                                    members: selectedTeam.members.filter(m => m.email !== values.email)
-                                };
-                            }
-
-                            return t;
-                        });
-
-                        updateTeams(teamWithOutMember);
-                    })
-                    .catch(e => {
+                    }).catch(e => {
                         log.error(e);
                         enqueueSnackbar('Erro ao excluir membro.', { variant: 'error' });
-                    })
-                    .finally(() => {
+                    }).finally(() => {
                         onClose();
                         setTimeout(() => { setLoading(false); }, 500);
                     });
@@ -106,18 +84,11 @@ function DeleteMemberModal({ open, selectedMember, onClose }: DeleteMemberModalP
                 const { email } = form.values;
 
                 if (email !== selectedMember?.email) {
-                    form.controls.email.error = 'O email informado não é o mesmo do membro selecionado.';
-                } else {
-                    form.controls.email.error = '';
+                    return 'O email informado não é o mesmo do membro selecionado.';
                 }
-            },
-            owner: (form) => {
-                const { email } = form.values;
 
-                if (selectedTeam && selectedTeam.admin.email === email) {
-                    form.controls.email.error = 'Você não pode excluir o dono do time.';
-                } else {
-                    form.controls.email.error = '';
+                if (team && team.admin.email === email) {
+                    return 'Você não pode excluir o dono do time.';
                 }
             }
         }
@@ -169,15 +140,25 @@ function DeleteMemberModal({ open, selectedMember, onClose }: DeleteMemberModalP
 
 interface TableMembersProps { members: TeamPopulated['members']; onSelect: (user: UserData) => void; }
 function TableMembers({ members, onSelect }: TableMembersProps) {
+    const { team } = useTeamDetails();
+
     return (
         <TableContainer elevation={0} component={Paper}>
-            <Table sx={{ minWidth: 650, border: (theme) => `1px solid ${theme.palette.grey[300]}` }}>
+            <Table sx={{
+                minWidth: 650,
+                border: ({ palette }) => palette.mode === 'light'
+                    ? `1px solid ${palette.grey[300]}`
+                    : `1px solid ${palette.grey[800]}`
+            }}>
                 <TableBody>
                     {
                         members.map((row) => (
                             <TableRow key={row.email}>
                                 <TableCell>
                                     <Avatar alt={row.name} src={row.picture} />
+                                </TableCell>
+                                <TableCell>
+                                    {team.admin.email === row.email ? 'Admin' : 'Membro'}
                                 </TableCell>
                                 <TableCell>{row.name}</TableCell>
                                 <TableCell>{row.email}</TableCell>
@@ -204,11 +185,10 @@ function TableLoading() {
 }
 
 export default function Members() {
-    const { loading } = useTeams();
-    const { selectedTeam } = useTeams();
+    const { team, loading } = useTeamDetails();
     const [open, setOpen] = useState(false);
     const [selectedMember, setSelectedMember] = useState<UserData>();
-    const { filtered, filter, reset } = useFilter(selectedTeam?.members);
+    const { filtered, filter, reset } = useFilter(team.members);
 
     const [formGroup] = useForm<{ name: string }>({
         form: {
@@ -258,7 +238,7 @@ export default function Members() {
                     </MuiFormControl>
                 </Form>
                 {
-                    loading
+                    loading.details
                         ? <TableLoading />
                         : filtered.length
                             ? <TableMembers members={filtered} onSelect={handleSelectUser} />

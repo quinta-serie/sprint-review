@@ -23,15 +23,15 @@ define run_in_workspace
 	fi
 endef
 
-# Função principal que aceita parâmetros
-run:
-	$(call run_in_workspace,$(PROJECT),$(CMD))
-
 # Extrair parâmetros dos argumentos posicionais
 .PHONY: run
 run:
 	$(eval PROJECT := $(word 2, $(MAKECMDGOALS)))
 	$(eval CMD := $(wordlist 3, $(words $(MAKECMDGOALS)), $(MAKECMDGOALS)))
 	$(call run_in_workspace,$(PROJECT),$(CMD))
+
+# Para evitar que make tente interpretar os argumentos como alvos
+%:
+	@:
 
 # ----------------------------------------------- #
