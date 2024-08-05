@@ -1813,6 +1813,7 @@ __metadata:
     react-gtm-module: ^2.0.11
     react-router-dom: ^6.23.1
     react-shadow: ^20.5.0
+    react-timer-hook: ^3.0.7
     sass: ^1.77.6
     typescript: ^5.5.2
     vite: ^5.3.1
@@ -5367,6 +5368,15 @@ __metadata:
     react: ^16.8.0 || ^17.0.0 || ^18.0.0
     react-dom: ^16.0.0 || ^17.0.0 || ^18.0.0
   checksum: 94c47c8bce5b61e6c7f20641b39cc20028f0954dbaa0f17a6e153448dce264240a2a8fd85e4b93ddb962abbb3cea783eb255bb7b2b4c3a1cd0283ff8cf70d325
+  languageName: node
+  linkType: hard
+
+"react-timer-hook@npm:^3.0.7":
+  version: 3.0.7
+  resolution: "react-timer-hook@npm:3.0.7"
+  peerDependencies:
+    react: ">=16.8.0"
+  checksum: 800c45a7fbf181897971b15f0d7b226f35348a12c48f933afbc1112693101bf3966bd7d276e4cb9fdc922c1ea66d8cbeddb0268e1631d1e39aa4b062cba2a7d1
   languageName: node
   linkType: hard
 
