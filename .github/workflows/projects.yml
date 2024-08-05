@@ -47,24 +47,15 @@ jobs:
           path: "**/node_modules"
           key: ${{ runner.os }}-setup-${{ inputs.BUILD_ENV }}-${{ hashFiles('./yarn.lock') }}
 
-      # - name: Cache Dependencies
-      #   uses: actions/cache@v3
-      #   with:
-      #     path: |
-      #       ${{ github.workspace }}/packages/*/*/dist
-      #     key: ${{ runner.os }}-dependencies-${{ inputs.BUILD_ENV }}-${{ github.sha }}
-
       - name: Cache ${{ inputs.PROJECT }}
         id: cache-project
         uses: actions/cache@v3
         with:
           path: |
             ${{ github.workspace }}/packages/projects/${{ inputs.PROJECT }}/${{ inputs.PATH }}
-          # key: ${{ runner.os }}-project-${{ inputs.PROJECT }}-${{ inputs.BUILD_ENV }}-${{ github.sha }}
-          # restore-keys: ${{ runner.os }}-project-${{ inputs.PROJECT }}-${{ inputs.BUILD_ENV }}-${{ github.sha }}
-          key: ${{ runner.os }}-project-${{ inputs.PROJECT }}-${{ inputs.BUILD_ENV }}-TEST
-          restore-keys: ${{ runner.os }}-project-${{ inputs.PROJECT }}-${{ inputs.BUILD_ENV }}-TEST
-
+          key: ${{ runner.os }}-project-${{ inputs.PROJECT }}-${{ inputs.BUILD_ENV }}-${{ github.sha }}
+          restore-keys: ${{ runner.os }}-project-${{ inputs.PROJECT }}-${{ inputs.BUILD_ENV }}-${{ github.sha }}
+  
       - name: Build ${{ inputs.PROJECT }}
         if: steps.cache-project.outputs.cache-hit != 'true'
         run: |

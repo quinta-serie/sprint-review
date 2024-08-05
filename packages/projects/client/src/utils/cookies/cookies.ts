@@ -1,19 +1,14 @@
 import C from 'js-cookie';
 
-import { getDomain } from '@/utils/url';
-
 import { CookieAttributes } from './interface';
 
 export class Cookies<T extends string> {
-
-    constructor(private domain: string = getDomain()) { }
-
     private save(key: T, data: any, att: CookieAttributes): void {
         C.set(key, data, att);
     }
 
     public remove(key: T, path = '/') {
-        C.remove(key, { path, domain: this.domain });
+        C.remove(key, { path });
     }
 
     public get<K>(key: T, decrypt = false): K {
@@ -25,7 +20,7 @@ export class Cookies<T extends string> {
     public set(key: T, data: any, encrypt = false, expires?: number | Date, path = '/') {
         if (data) {
             const value = encrypt ? window.btoa(JSON.stringify(data)) : data;
-            this.save(key, value, { domain: this.domain, path, expires: expires || 1, });
+            this.save(key, value, { path, expires: expires || 1, });
         }
     }
 }

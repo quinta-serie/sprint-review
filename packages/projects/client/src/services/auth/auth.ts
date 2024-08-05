@@ -15,7 +15,9 @@ export default class Auth {
 
     public async login() {
         return this.methods.googleAuth()
-            .then(r => { this.access_token = r.user.accessToken; });
+            .then(r => {
+                this.access_token = r.user.stsTokenManager.accessToken;
+            });
     }
 
     public async logout() {

@@ -28,18 +28,6 @@ jobs:
           key: ${{ runner.os }}-setup-${{ inputs.BUILD_ENV }}-${{ hashFiles('./yarn.lock') }}
           restore-keys: ${{ runner.os }}-setup-${{ inputs.BUILD_ENV }}-${{ hashFiles('./yarn.lock') }}
         
-      # - name: Cache Cypress
-      #   id: cache-cypress
-      #   uses: actions/cache@v3
-      #   with:
-      #     path: "~/.cache/Cypress"
-      #     key: cypress-cache-${{ runner.os }}-${{ hashFiles('./yarn.lock') }}
-      #     restore-keys: cypress-cache-${{ runner.os }}-${{ hashFiles('./yarn.lock') }}
-          
       - name: Install dependencies
         if: steps.cache-yarn.outputs.cache-hit != 'true'
         run: yarn install --immutable
-
-      # - name: Install Cypress
-      #   if: steps.cache-cypress.outputs.cache-hit != 'true'
-      #   run: yarn add cypress

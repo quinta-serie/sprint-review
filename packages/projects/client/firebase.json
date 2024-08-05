@@ -1,7 +1,7 @@
 {
   "hosting": [
     {
-      "target": "sprintretro-c9af7",
+      "target": "production",
       "public": "dist",
       "ignore": [
         "firebase.json",

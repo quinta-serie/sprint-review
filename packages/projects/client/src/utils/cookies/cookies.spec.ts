@@ -11,7 +11,7 @@ describe('Window Cookies', () => {
     });
 
     beforeEach(() => {
-        cookies = new Cookies(process.env.DOMAIN as string);
+        cookies = new Cookies();
     });
 
     it('should check that a cookie can be set with valid key, data, and attributes', () => {
@@ -36,7 +36,6 @@ describe('Window Cookies', () => {
 
         expect(cookie).toBe('');
     });
-
 
     it('should check that getting a cookie with invalid key returns undefined', () => {
         const cookie = cookies.get('invalidCookie');
