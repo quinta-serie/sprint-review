@@ -1,10 +1,9 @@
 import React from 'react';
 
-import { createTheme, Palette, PaletteColor, TypeBackground } from '@mui/material/styles';
+import { createTheme, PaletteColor, TypeBackground } from '@mui/material/styles';
 
 import WbSunnyIcon from '@mui/icons-material/WbSunny';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
-import ComputerIcon from '@mui/icons-material/Computer';
 
 import THEMES, { type Theme } from '@/theme';
 import { Mode } from '@/components/PersonalTheme';

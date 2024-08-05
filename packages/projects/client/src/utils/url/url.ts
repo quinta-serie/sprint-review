@@ -14,9 +14,13 @@ export function getDomain() {
 
     if (hostname === 'localhost') { return hostname; }
 
+    const arr = hostname.match(/^(?:.*?\.)?([a-zA-Z0-9\-_]{3,}\.(?:\w{2,8}|\w{2,4}\.\w{2,4}))$/);
+
+    if (!arr) { return ''; }
+
     return [
         '.',
-        hostname.match(/^(?:.*?\.)?([a-zA-Z0-9\-_]{3,}\.(?:\w{2,8}|\w{2,4}\.\w{2,4}))$/)[1]
+        arr[1]
     ].join('');
 }
 

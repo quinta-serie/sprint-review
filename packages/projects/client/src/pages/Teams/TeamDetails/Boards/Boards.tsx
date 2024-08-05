@@ -217,9 +217,11 @@ function CreateBoardModal({ open, onClose }: CreateBoardModalProps) {
                     ? templateFormGroup.values
                     : templates.find(t => t.id === form.values.template) as TemplateData;
 
+                console.log({ template });
+
                 createTeamBoard({
                     name,
-                    cards: [],
+                    cards: {},
                     teamId: team.id,
                     ownerId: user.user_id,
                     description: form.values.description,

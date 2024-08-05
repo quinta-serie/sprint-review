@@ -31,7 +31,7 @@ import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea
 
 import { slug } from '@/utils/string';
 import useModal from '@/hooks/useModal';
-import { addMinutes, addSeconds } from '@/utils/time';
+import { addMinutes } from '@/utils/time';
 import { boardServices } from '@/services/core';
 import AlertBell from '@/assets/audio/bell-alert.mp3';
 import type { BoardData, CardData } from '@/services/board';
@@ -65,7 +65,7 @@ function TemplateConfigDialog({ open, onClose }: TemplateConfigDialogProps) {
     const submit = (data: TemplateFormData) => {
         let expiryDate = '';
 
-        if (data.timer) { expiryDate = addSeconds(new Date(), data.timer).toISOString(); }
+        if (data.timer) { expiryDate = addMinutes(new Date(), data.timer).toISOString(); }
 
         updateTemplateConfig({ ...data, timer: { isRunning: !!data.timer, expiryDate } })
             .finally(onClose);

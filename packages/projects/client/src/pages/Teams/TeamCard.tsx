@@ -15,7 +15,7 @@ import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 
 import type { TeamPopulated } from '@/services/team';
 
-export default function TeamCard({ admin, members, name, id, state }: TeamPopulated) {
+export default function TeamCard({ admin, members, name, id }: TeamPopulated) {
     const navigate = useNavigate();
 
     const goToDetails = () => navigate(`/teams/${id}/boards`);

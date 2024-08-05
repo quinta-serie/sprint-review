@@ -1,7 +1,5 @@
 import { forwardRef, useState } from 'react';
 
-import { useSnackbar } from 'notistack';
-
 import Slide from '@mui/material/Slide';
 import Stack from '@mui/material/Stack';
 import Dialog from '@mui/material/Dialog';
@@ -14,9 +12,8 @@ import CircularProgress from '@mui/material/CircularProgress';
 import DialogContentText from '@mui/material/DialogContentText';
 import type { TransitionProps } from '@mui/material/transitions';
 
-import { teamServices, userServices } from '@/services/core';
+import { userServices } from '@/services/core';
 import Form, { useForm, Control, FormControl } from '@/components/Form';
-import { defaultTemplate } from '@/services/template';
 
 import useTeams from './useTeams';
 
@@ -33,7 +30,6 @@ interface CreateTeamModalProps { onClose: () => void, open: boolean }
 export default function CreateTeamModal({ open, onClose }: CreateTeamModalProps) {
     const { addTeam } = useTeams();
     const [loading, setLoading] = useState(false);
-    const { enqueueSnackbar } = useSnackbar();
 
     const [formControl] = useForm<{ name: string }>({
         form: {
