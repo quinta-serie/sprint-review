@@ -9,18 +9,19 @@ export default function useTemplateForm(template: TemplateData, submit?: (data: 
         columns,
         maxVotesPerCard,
         maxVotesPerUser,
-        shouldShowCardsAutor,
-        shouldHideCardsInitially
+        hideCardsAutor,
+        hideCardsInitially
     } = template;
 
     const [formGroup] = useForm<TemplateFormData>({
         form: {
-            name: new FormControl({ value: name, required: true }),
             columns: new FormControl({ value: columns }),
+            timer: new FormControl({ value: 0 }),
+            name: new FormControl({ value: name, required: true }),
+            hideCardsAutor: new FormControl({ value: hideCardsAutor }),
             maxVotesPerCard: new FormControl({ value: maxVotesPerCard }),
             maxVotesPerUser: new FormControl({ value: maxVotesPerUser }),
-            shouldShowCardsAutor: new FormControl({ value: shouldShowCardsAutor }),
-            shouldHideCardsInitially: new FormControl({ value: shouldHideCardsInitially }),
+            hideCardsInitially: new FormControl({ value: hideCardsInitially }),
         },
         handle: {
             submit: (form) => { submit && submit(form.values); }
@@ -30,6 +31,8 @@ export default function useTemplateForm(template: TemplateData, submit?: (data: 
                 const { columns } = form.values;
 
                 if (!columns.length) { return 'É necessário ao menos uma coluna'; }
+
+                if (columns.length > 3) { return 'Máximo de 3 colunas'; }
             }
         }
     }, []);

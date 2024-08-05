@@ -14,8 +14,11 @@ import MuiFormGroup from '@mui/material/FormGroup';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import InputAdornment from '@mui/material/InputAdornment';
 import FormControlLabel from '@mui/material/FormControlLabel';
+import Tooltip from '@mui/material/Tooltip';
 
 import AddIcon from '@mui/icons-material/Add';
+import InfoIcon from '@mui/icons-material/Info';
+import TimerIcon from '@mui/icons-material/Timer';
 
 import Form, { Control, FormGroup } from '@/components/Form';
 
@@ -24,7 +27,11 @@ import type { TemplateFormData } from './interface';
 function InputColumns({ formGroup }: { formGroup: FormGroup<TemplateFormData> }) {
     const [input, setInput] = useState('');
 
-    const addColumn = () => { formGroup.setValues({ columns: [...formGroup.controls.columns.value, input] }); };
+    const addColumn = () => {
+        formGroup.setValues({ columns: [...formGroup.controls.columns.value, input] });
+
+        setInput('');
+    };
 
     const updateInput = (e: React.FormEvent<HTMLDivElement>) => { setInput(e.target['value']); };
 
@@ -38,7 +45,7 @@ function InputColumns({ formGroup }: { formGroup: FormGroup<TemplateFormData> })
 
     return (
         <Box>
-            <Typography variant="subtitle2" gutterBottom>Colunas</Typography>
+            <Typography variant="subtitle2" color="text.primary" gutterBottom>Colunas</Typography>
             <OutlinedInput
                 fullWidth
                 size="small"
@@ -82,6 +89,7 @@ function InputColumns({ formGroup }: { formGroup: FormGroup<TemplateFormData> })
 
 interface TemplateFormProps {
     shouldOmitName?: boolean;
+    shouldOmitTimer?: boolean;
     shouldOmitColumns?: boolean;
     children?: React.JSX.Element;
     formGroup: FormGroup<TemplateFormData>;
@@ -90,14 +98,15 @@ export default function TemplateForm({
     children,
     formGroup,
     shouldOmitName = false,
-    shouldOmitColumns = false
+    shouldOmitTimer = true,
+    shouldOmitColumns = false,
 }: TemplateFormProps) {
     return (
         <Form formGroup={formGroup}>
             <Stack spacing={2}>
                 {
                     !shouldOmitName && <Box>
-                        <Typography variant="subtitle2" gutterBottom>Nome do Board</Typography>
+                        <Typography variant="subtitle2" color="text.primary" gutterBottom>Nome do Board</Typography>
                         <Control controlName="name">
                             <TextField
                                 fullWidth
@@ -112,61 +121,95 @@ export default function TemplateForm({
                     </Box>
                 }
                 <Box>
-                    <Typography variant="subtitle2" gutterBottom>Votos por pessoa</Typography>
+                    <Typography variant="subtitle2" color="text.primary" gutterBottom>Votos por pessoa</Typography>
                     <Control controlName="maxVotesPerUser" action="onChange">
                         <Slider
                             marks
                             min={1}
                             max={10}
                             shiftStep={1}
-                            defaultValue={formGroup.controls.maxVotesPerUser.value}
+                            value={formGroup.controls.maxVotesPerUser.value}
                             valueLabelDisplay="auto"
                         />
                     </Control>
                 </Box>
                 <Box>
-                    <Typography variant="subtitle2" gutterBottom>Votos por Card</Typography>
+                    <Typography variant="subtitle2" color="text.primary" gutterBottom>Votos por Card</Typography>
                     <Control controlName="maxVotesPerCard" action="onChange">
                         <Slider
                             marks
                             min={1}
                             max={10}
                             shiftStep={1}
-                            defaultValue={formGroup.controls.maxVotesPerCard.value}
+                            value={formGroup.controls.maxVotesPerCard.value}
                             valueLabelDisplay="auto"
                         />
                     </Control>
                 </Box>
                 <Box>
-                    <Typography variant="subtitle2" gutterBottom>Configurações</Typography>
+                    <Typography variant="subtitle2" color="text.primary" gutterBottom>Configurações</Typography>
                     <MuiFormGroup>
                         <FormControlLabel
                             label="Ocultar cards inicialmente"
+                            sx={{ color: 'text.primary' }}
                             control={
                                 <Control
                                     type="checkbox"
                                     action="onChange"
-                                    controlName="shouldHideCardsInitially"
+                                    controlName="hideCardsInitially"
                                 >
-                                    <Switch checked={formGroup.controls.shouldHideCardsInitially.value} />
+                                    <Switch checked={formGroup.controls.hideCardsInitially.value} />
                                 </Control>
                             }
                         />
                         <FormControlLabel
-                            label="Mostrar autor do card"
+                            label="Ocultar autor do card"
+                            sx={{ color: 'text.primary' }}
                             control={
                                 <Control
                                     type="checkbox"
                                     action="onChange"
-                                    controlName="shouldShowCardsAutor"
+                                    controlName="hideCardsAutor"
                                 >
-                                    <Switch checked={formGroup.controls.shouldShowCardsAutor.value} />
+                                    <Switch checked={formGroup.controls.hideCardsAutor.value} />
                                 </Control>
                             }
                         />
                     </MuiFormGroup>
-                    {!shouldOmitColumns && <InputColumns formGroup={formGroup} />}
                 </Box>
+
+                {
+                    !shouldOmitTimer && (
+                        <Box>
+                            <Typography variant="body2" mb={2}>Contador regressivo</Typography>
+                            <Stack direction="row" spacing={1} alignItems="center">
+                                <TimerIcon sx={{ color: 'text.primary' }} />
+                                <Control controlName="timer">
+                                    <TextField
+                                        size="small"
+                                        variant="outlined"
+                                        sx={{ width: '50px' }}
+                                        value={formGroup.controls.timer.value}
+                                        error={formGroup.controls.timer.isInvalid}
+                                        helperText={
+                                            formGroup.controls.timer.isInvalid && formGroup.controls.timer.error
+                                        }
+                                    />
+                                </Control>
+                                <Typography variant="subtitle2" color="text.primary">Minutos</Typography>
+                                <Tooltip
+                                    placement="right"
+                                    title="Ao adicionar um novo valor seu contador ativo será resetado"
+                                >
+                                    <InfoIcon />
+                                </Tooltip>
+                            </Stack>
+                        </Box>
+                    )
+                }
+
+                {!shouldOmitColumns && <InputColumns formGroup={formGroup} />}
+
                 {children}
             </Stack>
         </Form>
