@@ -3,7 +3,7 @@
     "production": "sprintretro-c9af7"
   },
   "targets": {
-    "prd-mymagicchat": {
+    "sprintretro-c9af7": {
       "hosting": {
         "sprintretro-c9af7": [
           "prd-sprintretro"
