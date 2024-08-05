@@ -19,12 +19,13 @@ jobs:
     secrets: inherit
   
   build-project:
+    needs: [setup]
     uses: ./.github/workflows/projects.yml
     with:
       ENV: production
       PATH: dist
       PROJECT: ${{ inputs.project }}
-      COMMAND: build-${{ inputs.project }}-prod
+      COMMAND: build:prod
     secrets: inherit
 
   environment:

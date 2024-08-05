@@ -53,4 +53,4 @@ jobs:
       - name: Build ${{ inputs.PROJECT }}
         if: steps.cache-project.outputs.cache-hit != 'true'
         run: |
-          make ${{ inputs.COMMAND }};
+          make run ${{ inputs.PROJECT }} ${{ inputs.COMMAND }};
