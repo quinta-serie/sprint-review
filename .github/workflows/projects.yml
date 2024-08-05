@@ -60,8 +60,10 @@ jobs:
         with:
           path: |
             ${{ github.workspace }}/packages/projects/${{ inputs.PROJECT }}/${{ inputs.PATH }}
-          key: ${{ runner.os }}-project-${{ inputs.PROJECT }}-${{ inputs.BUILD_ENV }}-${{ github.sha }}
-          restore-keys: ${{ runner.os }}-project-${{ inputs.PROJECT }}-${{ inputs.BUILD_ENV }}-${{ github.sha }}
+          # key: ${{ runner.os }}-project-${{ inputs.PROJECT }}-${{ inputs.BUILD_ENV }}-${{ github.sha }}
+          # restore-keys: ${{ runner.os }}-project-${{ inputs.PROJECT }}-${{ inputs.BUILD_ENV }}-${{ github.sha }}
+          key: ${{ runner.os }}-project-${{ inputs.PROJECT }}-${{ inputs.BUILD_ENV }}-TEST
+          restore-keys: ${{ runner.os }}-project-${{ inputs.PROJECT }}-${{ inputs.BUILD_ENV }}-TEST
 
       - name: Build ${{ inputs.PROJECT }}
         if: steps.cache-project.outputs.cache-hit != 'true'
