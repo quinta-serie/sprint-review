@@ -1,7 +1,7 @@
 import { initializeApp } from 'firebase/app';
-import { getAnalytics } from 'firebase/analytics';
+// import { getAnalytics } from 'firebase/analytics';
 import { getFirestore } from 'firebase/firestore';
-import { getRemoteConfig } from 'firebase/remote-config';
+// import { getRemoteConfig } from 'firebase/remote-config';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
 
 import DB from './db';
@@ -35,8 +35,8 @@ const app = initializeApp({
 const firebaseAuth = getAuth(app);
 const googleProvider = new GoogleAuthProvider();
 
-const config = getRemoteConfig(app);
-const analytics = getAnalytics(app);
+// const config = getRemoteConfig(app);
+// const analytics = getAnalytics(app);
 
 export const auth = new Auth({
     googleAuth: () => signInWithPopup(firebaseAuth, googleProvider),

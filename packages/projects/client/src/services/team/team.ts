@@ -14,7 +14,10 @@ export default class Team {
         return this.db.getItem<TeamData>({
             path: Team.PATH,
             pathSegments: [],
-            filters: [{ field: 'id', operator: '==', value: teamId }],
+            filters: [
+                { field: 'id', operator: '==', value: teamId },
+                { field: 'state', operator: '==', value: 'active' }
+            ],
         });
     }
 
@@ -22,17 +25,20 @@ export default class Team {
         return this.db.getList<TeamData>({
             path: Team.PATH,
             pathSegments: [],
-            filters: [{ field: 'members', operator: 'array-contains', value: userEmail }],
+            filters: [
+                { field: 'members', operator: 'array-contains', value: userEmail },
+                { field: 'state', operator: '==', value: 'active' }
+            ],
         });
     }
 
-    async createTeam(data: Omit<TeamData, 'id'>) {
+    async createTeam(data: Omit<TeamData, 'id' | 'state'>) {
         const id = uuid();
 
-        return this.db.setItem({
+        return this.db.setItem<TeamData>({
             path: Team.PATH,
             pathSegments: [id],
-            data: { ...data, id },
+            data: { ...data, id, state: 'active' },
         }).then(() => ({ ...data, id }));
     }
 

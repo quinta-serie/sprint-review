@@ -6,8 +6,8 @@ export interface TemplateData {
     columns: Array<string>;
     maxVotesPerCard: number;
     maxVotesPerUser: number;
-    shouldShowCardsAutor: boolean;
-    shouldHideCardsInitially: boolean;
+    hideCardsInitially: boolean;
+    hideCardsAutor: boolean;
 }
 
 export type TemplateWithEditableData = Omit<TemplateData, 'id'>;

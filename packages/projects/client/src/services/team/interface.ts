@@ -7,6 +7,7 @@ export interface TeamData {
     admin: string;
     members: string[];
     defaultTemplate?: string;
+    state: 'active' | 'archived';
 }
 
 export interface TeamPopulated extends Omit<TeamData, 'members' | 'admin' | 'defaultTemplate'> {

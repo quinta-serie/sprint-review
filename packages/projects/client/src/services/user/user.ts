@@ -11,7 +11,6 @@ export default class User {
     constructor(private db: DB) { }
 
     get current() {
-        // TODO: temporary solution
         try {
             const data = decode<UserData>(this.cookies.get('access_token'));
 

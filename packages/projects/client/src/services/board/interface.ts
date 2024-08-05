@@ -1,4 +1,4 @@
-import type { TemplateData } from '../template';
+import type { TemplateData, TemplateWithEditableData } from '../template';
 
 export interface BoardData {
     id: string;
@@ -7,10 +7,17 @@ export interface BoardData {
     ownerId: string;
     createdAt: string;
     description: string;
+    timer?: {
+        isRunning: boolean;
+        expiryDate?: string;
+    }
     cards: { [x: string]: CardData[] };
     template: TemplateData;
     status: 'active' | 'archived';
 }
+
+export type BoardDataConfig =
+    Pick<BoardData, 'timer'> & Omit<TemplateWithEditableData, 'id' | 'teamId' | 'isDefault'>;
 
 export interface CardData {
     id: string;

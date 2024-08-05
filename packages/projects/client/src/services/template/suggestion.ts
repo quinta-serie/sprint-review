@@ -10,6 +10,6 @@ export const defaultTemplate = (teamId: string): TemplateData => ({
     isDefault: true,
     maxVotesPerCard: 3,
     maxVotesPerUser: 5,
-    shouldShowCardsAutor: false,
-    shouldHideCardsInitially: false,
+    hideCardsAutor: true,
+    hideCardsInitially: true,
 });

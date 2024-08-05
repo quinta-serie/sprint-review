@@ -2,8 +2,7 @@ import DB from '@/services/db';
 import { uuid } from '@/utils/uuid';
 import { slug } from '@/utils/string';
 
-import { type BoardData } from './interface';
-import { TemplateData } from '../template';
+import type { BoardData } from './interface';
 
 export default class Board {
     private static PATH = 'boards';
