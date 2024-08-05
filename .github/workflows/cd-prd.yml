@@ -1,0 +1,54 @@
+name: CD - PRD
+run-name: Deploy to "${{ inputs.project }}" by @${{ github.actor }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      project:
+        type: choice
+        description: Choice a project
+        required: true
+        options:
+          - client
+
+jobs:
+  setup:
+    uses: ./.github/workflows/setup.yml
+    with:
+      ENV: production
+    secrets: inherit
+  
+  build-project:
+    uses: ./.github/workflows/projects.yml
+    with:
+      ENV: production
+      PATH: dist
+      PROJECT: ${{ inputs.project }}
+      COMMAND: build-${{ inputs.project }}-prod
+    secrets: inherit
+
+  environment:
+    needs: [build-project]
+    runs-on: ubuntu-latest
+    outputs:
+      firebase_token: ${{ steps.firebase_token.outputs.value }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Get Firebase Token
+        id: firebase_token
+        env:
+          FIREBASE_TOKEN: 1//0hfJzw-OoupOvCgYIARAAGBESNwF-L9IrUFDhjlhBXmpZdTnJE0a-a0apKnD1UtauEslpvR9fwXmZ2EgRinkPCUQ9iEz4MMZt1Es
+        run: echo "value=$FIREBASE_TOKEN" >> $GITHUB_OUTPUT
+
+  deploy-project:
+    needs: [environment]
+    uses: ./.github/workflows/deploy.yml
+    with:
+      ENV: production
+      PATH: dist
+      PROJECT: ${{ inputs.project }}
+      HOSTING: sprintretro-c9af7
+      FIREBASE_TOKEN: ${{ needs.environment.outputs.firebase_token }}
+    secrets: inherit
