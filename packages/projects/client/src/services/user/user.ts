@@ -27,14 +27,14 @@ export default class User {
         }
     }
 
-    get current() {
+    get current(): UserData {
         const data = local.get<UserData>('user', true);
 
         return {
-            name: data.name,
-            email: data.email,
-            picture: data.picture,
-            user_id: data.user_id,
+            name: data?.name,
+            email: data?.email,
+            picture: data?.picture,
+            user_id: data?.user_id,
         };
     }
 

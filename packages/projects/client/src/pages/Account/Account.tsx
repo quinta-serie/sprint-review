@@ -107,7 +107,7 @@ function PersonalInformation() {
                     />
                 </StyledBadge>
             </Box>
-            <Form formGroup={formGroup} debug>
+            <Form formGroup={formGroup}>
                 <Stack spacing={2}>
                     <Control controlName="name">
                         <TextField

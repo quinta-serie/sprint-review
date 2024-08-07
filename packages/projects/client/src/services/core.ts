@@ -1,7 +1,5 @@
 import { initializeApp } from 'firebase/app';
-// import { getAnalytics } from 'firebase/analytics';
 import { getFirestore } from 'firebase/firestore';
-// import { getRemoteConfig } from 'firebase/remote-config';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
 
 import DB from './db';

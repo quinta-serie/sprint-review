@@ -1,3 +1,4 @@
+import local from '@/utils/local';
 import { Cookies } from '@/utils/cookies';
 
 export interface AuthMethods {
@@ -16,12 +17,15 @@ export default class Auth {
     public async login() {
         return this.methods.googleAuth()
             .then(r => {
-                this.access_token = r.user.stsTokenManager.accessToken;
+                this.access_token = r.user.accessToken;
             });
     }
 
     public async logout() {
         return this.methods.signout()
-            .then(() => { this.cookies.remove('access_token'); });
+            .then(() => {
+                local.remove('user');
+                this.cookies.remove('access_token');
+            });
     }
 }
