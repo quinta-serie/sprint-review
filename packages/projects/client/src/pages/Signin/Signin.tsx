@@ -25,17 +25,18 @@ export default function Signin() {
     };
 
     const verifyUser = (redirect: () => void) => {
-        const { email } = userServices.current;
+        const { email } = userServices.currentByToken;
 
         userServices.getUserByEmail(email)
             .then(current => {
                 if (current) {
-                    redirect();
+                    userServices.current = current;
+                    setTimeout(() => { redirect(); }, 500);
                     return;
                 }
 
                 userServices.createUser()
-                    .then(() => redirect());
+                    .then(() => setTimeout(() => { redirect(); }, 500));
             });
     };
 

@@ -26,7 +26,7 @@ const dark: ThemeOptions = {
             main: '#3DB278',
         },
         secondary: {
-            main: '#1C2C25',
+            main: '#fff',
         },
         text: {
             primary: '#FFF'

@@ -51,10 +51,10 @@ function EmptyContent({ onOpenCreateModal }: EmptyContentProps) {
         <Box sx={{ height: 260, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
             <Stack textAlign="center" spacing={1}>
                 <InventoryIcon sx={{ fontSize: 60 }} style={{ margin: 'auto' }} color="disabled" />
-                <Typography variant="h6" component="h6">
+                <Typography variant="h6" component="h6" color="text.primary">
                     Você ainda não está em nenhum time
                 </Typography>
-                <Typography variant="body1" component="h6">
+                <Typography variant="body1" component="h6" color="text.primary">
                     Clique em "criar time" ou solicite que um membro do seu time te adicione
                 </Typography>
                 <Button

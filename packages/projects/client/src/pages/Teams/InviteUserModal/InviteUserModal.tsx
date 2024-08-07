@@ -1,5 +1,7 @@
+
 import { useState, forwardRef, useEffect } from 'react';
 
+import copy from 'copy-to-clipboard';
 import { enqueueSnackbar } from 'notistack';
 
 import Box from '@mui/material/Box';
@@ -26,10 +28,10 @@ import AddIcon from '@mui/icons-material/Add';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 
 import useKey from '@/hooks/useKey';
-import { inviteServices, url } from '@/services/core';
 import { validator } from '@/components/Form';
-import type { TeamPopulated } from '@/services/team';
 import type { InviteData } from '@/services/invite';
+import type { TeamPopulated } from '@/services/team';
+import { inviteServices, url } from '@/services/core';
 
 import useTeamDetails from '../TeamDetails/useTeamDetails';
 
@@ -54,6 +56,11 @@ export default function InviteUserModal({ teamSelected, open, onClose }: InviteU
     useKey({ Enter: () => { addEmail(); } }, [input]);
 
     useEffect(() => { if (!open) { setEmails([]); } }, [open]);
+
+    const copyInviteLink = () => {
+        copy(inviteLink);
+        enqueueSnackbar('Link copiado!', { variant: 'success' });
+    };
 
     const addEmail = () => {
         const { value } = input;
@@ -129,7 +136,7 @@ export default function InviteUserModal({ teamSelected, open, onClose }: InviteU
                             endAdornment={
                                 <InputAdornment position="end">
                                     <IconButton
-                                        onClick={() => ''}
+                                        onClick={copyInviteLink}
                                         edge="end"
                                     >
                                         <ContentCopyIcon />

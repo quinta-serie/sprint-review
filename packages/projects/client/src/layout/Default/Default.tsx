@@ -230,12 +230,15 @@ function MenuNotification({ anchorEl, open, invites, onClose, onDeleteInviteNoti
 }
 
 export default function Default({ children }: IProps) {
+    const navigate = useNavigate();
     const [invites, setInvites] = useState<InviteData[]>([]);
     const { name, email, picture } = userServices.current;
 
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
     const open = Boolean(anchorEl);
+
+    console.log('Default', { name, email, picture });
 
     useEffect(() => {
         const unsubscribe = inviteServices.subscription(email, (invite) => {
@@ -249,14 +252,13 @@ export default function Default({ children }: IProps) {
 
         return () => unsubscribe();
     }, []);
-    // }, [invites]);
 
-    const handleDeleteInviteNotification = (id: string) => {
-        setInvites(prev => prev.filter(i => i.id !== id));
-    };
+    const handleDeleteInviteNotification = (id: string) => { setInvites(prev => prev.filter(i => i.id !== id)); };
 
     const handleClick = (event: React.MouseEvent<HTMLElement>) => { setAnchorEl(event.currentTarget); };
     const handleClose = () => { setAnchorEl(null); };
+
+    const goToProfile = () => { navigate('/my-account'); };
 
     return (
         <Box sx={{ display: 'flex' }}>
@@ -304,8 +306,8 @@ export default function Default({ children }: IProps) {
                             onClose={handleClose}
                             onDeleteInviteNotification={handleDeleteInviteNotification}
                         />
-                        <Tooltip title={name}>
-                            <Avatar alt={name} src={picture} />
+                        <Tooltip title={name} onClick={goToProfile}>
+                            <Avatar alt={name} src={picture} sx={{ cursor: 'pointer' }} />
                         </Tooltip>
                     </Stack>
                     {children}

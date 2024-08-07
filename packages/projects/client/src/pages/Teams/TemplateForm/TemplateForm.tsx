@@ -105,20 +105,28 @@ export default function TemplateForm({
         <Form formGroup={formGroup}>
             <Stack spacing={2}>
                 {
-                    !shouldOmitName && <Box>
-                        <Typography variant="subtitle2" color="text.primary" gutterBottom>Nome do Board</Typography>
-                        <Control controlName="name">
-                            <TextField
-                                fullWidth
-                                size="small"
-                                variant="outlined"
-                                placeholder="Ex: Retrospectiva"
-                                value={formGroup.controls.name.value}
-                                error={formGroup.controls.name.isInvalid}
-                                helperText={formGroup.controls.name.isInvalid && formGroup.controls.name.error}
-                            />
-                        </Control>
-                    </Box>
+                    !shouldOmitName && (
+                        <Box>
+                            <Typography
+                                gutterBottom
+                                variant="subtitle2"
+                                color="text.primary"
+                            >
+                                Nome do Board
+                            </Typography>
+                            <Control controlName="name">
+                                <TextField
+                                    fullWidth
+                                    size="small"
+                                    variant="outlined"
+                                    placeholder="Ex: Retrospectiva"
+                                    value={formGroup.controls.name.value}
+                                    error={formGroup.controls.name.isInvalid}
+                                    helperText={formGroup.controls.name.isInvalid && formGroup.controls.name.error}
+                                />
+                            </Control>
+                        </Box>
+                    )
                 }
                 <Box>
                     <Typography variant="subtitle2" color="text.primary" gutterBottom>Votos por pessoa</Typography>
@@ -134,7 +142,21 @@ export default function TemplateForm({
                     </Control>
                 </Box>
                 <Box>
-                    <Typography variant="subtitle2" color="text.primary" gutterBottom>Votos por Card</Typography>
+                    <Stack direction="row" alignItems="center" spacing={1}>
+                        <Typography
+                            variant="subtitle2"
+                            gutterBottom
+                            color="text.primary"
+                        >
+                            Votos individuais por card
+                        </Typography>
+                        <Tooltip
+                            placement="right"
+                            title="Quantidade de votos que cada pessoa pode votar em um único card"
+                        >
+                            <InfoIcon color="action" />
+                        </Tooltip>
+                    </Stack>
                     <Control controlName="maxVotesPerCard" action="onChange">
                         <Slider
                             marks
@@ -145,6 +167,13 @@ export default function TemplateForm({
                             valueLabelDisplay="auto"
                         />
                     </Control>
+                    {
+                        formGroup.controls.maxVotesPerCard.isInvalid && (
+                            <Typography variant="body2" color="error">
+                                {formGroup.controls.maxVotesPerCard.error}
+                            </Typography>
+                        )
+                    }
                 </Box>
                 <Box>
                     <Typography variant="subtitle2" color="text.primary" gutterBottom>Configurações</Typography>

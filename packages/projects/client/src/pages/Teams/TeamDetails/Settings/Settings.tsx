@@ -135,7 +135,9 @@ function DefaultBoardTeamplateConfig() {
             .finally(() => setTimeout(() => { setLoading(false); }, 500));
     };
 
-    const templateFormGroup = useTemplateForm(defaultTemplate(team.id), submit);
+    const template = team.defaultTemplate || defaultTemplate(team.id);
+
+    const templateFormGroup = useTemplateForm(template, submit);
 
     return (
         <Zone

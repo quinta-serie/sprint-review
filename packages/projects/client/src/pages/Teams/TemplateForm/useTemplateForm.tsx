@@ -27,6 +27,14 @@ export default function useTemplateForm(template: TemplateData, submit?: (data: 
             submit: (form) => { submit && submit(form.values); }
         },
         validator: {
+            maxVotesPerCard(form) {
+                const { maxVotesPerCard, maxVotesPerUser } = form.values;
+
+                if (maxVotesPerCard > maxVotesPerUser) {
+                    // eslint-disable-next-line max-len
+                    return 'A quantidade de votos individuais por card deve ser menor que a quantidade de votos por pessoa';
+                }
+            },
             columns: (form) => {
                 const { columns } = form.values;
 

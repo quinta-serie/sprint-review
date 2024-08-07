@@ -156,10 +156,10 @@ function EmptyContent() {
         <Box sx={{ height: 260, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
             <Stack textAlign="center" spacing={1}>
                 <InventoryIcon sx={{ fontSize: 60 }} style={{ margin: 'auto' }} color="disabled" />
-                <Typography variant="h6" component="h6">
+                <Typography variant="h6" component="h6" color="text.primary">
                     Seu time não tem nenhum convite enviado
                 </Typography>
-                <Typography variant="body1" component="h6">
+                <Typography variant="body1" component="h6" color="text.primary">
                     Clique em "Adicionar membro" para enviar um novo convite
                 </Typography>
                 <Button

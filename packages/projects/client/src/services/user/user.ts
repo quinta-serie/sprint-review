@@ -1,3 +1,4 @@
+import local from '@/utils/local';
 import type DB from '@/services/db';
 import { decode } from '@/utils/jwt';
 import { Cookies } from '@/utils/cookies';
@@ -10,7 +11,7 @@ export default class User {
 
     constructor(private db: DB) { }
 
-    get current() {
+    get currentByToken() {
         try {
             const data = decode<UserData>(this.cookies.get('access_token'));
 
@@ -26,6 +27,19 @@ export default class User {
         }
     }
 
+    get current() {
+        const data = local.get<UserData>('user', true);
+
+        return {
+            name: data.name,
+            email: data.email,
+            picture: data.picture,
+            user_id: data.user_id,
+        };
+    }
+
+    set current(data: UserData) { local.set('user', data); }
+
     getUserByEmail(email: string) {
         return this.db.getItem<UserData>({
             path: User.PATH,
@@ -34,11 +48,23 @@ export default class User {
         });
     }
 
-    createUser() {
+    async createUser() {
         return this.db.setItem<UserData>({
             path: User.PATH,
-            data: this.current,
+            data: this.currentByToken,
+            pathSegments: [this.currentByToken.email],
+        }).then(() => { this.current = this.currentByToken; });
+    }
+
+    async updateUserName(name: string) {
+        const buildedData = { ...this.current, name };
+
+        return this.db.setItem<UserData>({
+            path: User.PATH,
+            data: buildedData,
             pathSegments: [this.current.email],
+        }).then(() => {
+            this.current = buildedData;
         });
     }
 }

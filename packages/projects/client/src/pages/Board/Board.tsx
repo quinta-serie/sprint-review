@@ -2,6 +2,7 @@ import { useTimer } from 'react-timer-hook';
 import { useParams } from 'react-router-dom';
 import { forwardRef, useEffect, useState } from 'react';
 
+import copy from 'copy-to-clipboard';
 import { useSnackbar } from 'notistack';
 
 import Box from '@mui/material/Box';
@@ -32,7 +33,7 @@ import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea
 import { slug } from '@/utils/string';
 import useModal from '@/hooks/useModal';
 import { addMinutes } from '@/utils/time';
-import { boardServices } from '@/services/core';
+import { boardServices, url } from '@/services/core';
 import AlertBell from '@/assets/audio/bell-alert.mp3';
 import type { BoardData, CardData } from '@/services/board';
 
@@ -253,7 +254,14 @@ function Content() {
 
     const mappedStatus = MAP_STATUS[board.status];
 
+    const inviteLink = `${url.origin}/board/${board.id}`;
+
     useEffect(() => { restart(new Date(board.timer?.expiryDate || ''), true); }, [board]);
+
+    const copyBoardLink = () => {
+        copy(inviteLink);
+        enqueueSnackbar('Link copiado!', { variant: 'success' });
+    };
 
     const handleRemoveTimer = () => {
         removeTimer().then(() => {
@@ -298,7 +306,7 @@ function Content() {
             </Stack>
             <Divider />
             <Stack direction="row" justifyContent="flex-end">
-                <IconButton onClick={() => console.log('share')} >
+                <IconButton onClick={copyBoardLink} >
                     <ShareIcon />
                 </IconButton>
                 {

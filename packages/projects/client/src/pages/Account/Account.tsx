@@ -1,8 +1,11 @@
 import { useMemo } from 'react';
 
+import { useSnackbar } from 'notistack';
+
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Card from '@mui/material/Card';
+import Zoom from '@mui/material/Zoom';
 import Badge from '@mui/material/Badge';
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
@@ -14,17 +17,16 @@ import Typography from '@mui/material/Typography';
 import CardHeader from '@mui/material/CardHeader';
 import CardContent from '@mui/material/CardContent';
 import CardActionArea from '@mui/material/CardActionArea';
-import Zoom from '@mui/material/Zoom';
 
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 
 import Page from '@/layout/Page';
 import Logo from '@/components/Logo';
+import { capitalize } from '@/utils/string';
 import THEMES, { type Theme } from '@/theme';
 import { userServices } from '@/services/core';
 import Form, { FormControl, useForm, Control } from '@/components/Form';
 import usePersonalTheme from '@/components/PersonalTheme/usePersonalTheme';
-import { capitalize } from '@/utils/string';
 
 import cardModes, { type CardModes } from './modes';
 
@@ -73,6 +75,7 @@ function Zone({ title, subtitle, children }: ZoneProps) {
 }
 
 function PersonalInformation() {
+    const { enqueueSnackbar } = useSnackbar();
     const { name, picture, email } = userServices.current;
 
     const [formGroup] = useForm<{ name: string }>({
@@ -83,7 +86,8 @@ function PersonalInformation() {
             submit: (form) => {
                 const { name } = form.values;
 
-                console.log(name);
+                userServices.updateUserName(name)
+                    .then(() => { enqueueSnackbar('Nome atualizado com sucesso', { variant: 'success' }); });
             }
         }
     }, []);
@@ -103,7 +107,7 @@ function PersonalInformation() {
                     />
                 </StyledBadge>
             </Box>
-            <Form formGroup={formGroup}>
+            <Form formGroup={formGroup} debug>
                 <Stack spacing={2}>
                     <Control controlName="name">
                         <TextField
@@ -123,7 +127,7 @@ function PersonalInformation() {
                     />
 
                     <Stack direction="row" justifyContent="flex-end">
-                        <Button variant="contained" color="secondary">
+                        <Button type="submit" variant="contained" color="secondary">
                             Alterar dados
                         </Button>
                     </Stack>
@@ -169,10 +173,10 @@ function MiniAppACard(cardData: CardModes) {
                                 right: 0,
                                 width: 20,
                                 height: 20,
-                                background: 'white',
                                 borderRadius: '50%',
                                 position: 'absolute',
                                 margin: '10px 0px 0px 0px',
+                                background: ({ palette }) => palette.action.selected,
                             }}>
                                 <CheckCircleIcon
                                     color="secondary"
@@ -288,10 +292,10 @@ function CardTheme({ theme }: { theme: Theme }) {
                             right: 8,
                             width: 15,
                             height: 15,
-                            background: 'white',
                             borderRadius: '50%',
                             position: 'absolute',
                             margin: '10px 0px 0px 0px',
+                            background: ({ palette }) => palette.action.selected,
                         }}>
                             <CheckCircleIcon
                                 color="secondary"
@@ -328,7 +332,7 @@ function ThemeInfo() {
                 <Grid container spacing={3}>
                     {
                         cardModes(theme).map(card => (
-                            <Grid key={card.title} item xs={4}>
+                            <Grid key={card.title} item xs={12} sm={6} md={4}>
                                 <MiniAppACard {...card} />
                             </Grid>
                         ))
@@ -340,7 +344,7 @@ function ThemeInfo() {
                 <Grid container spacing={3}>
                     {
                         Object.keys(THEMES).map(theme => (
-                            <Grid key={theme} item xs={3}>
+                            <Grid key={theme} item xs={12} sm={6} md={4}>
                                 <CardTheme theme={theme as Theme} />
                             </Grid>
                         ))
@@ -362,7 +366,6 @@ export default function Account() {
                 <Zone title="Preferências">
                     <ThemeInfo />
                 </Zone>
-                <Divider />
             </Stack>
         </Page>
     );
