@@ -196,9 +196,7 @@ function Columns() {
                             <Button
                                 fullWidth
                                 sx={{
-                                    color: ({ palette }) => palette.mode === 'light'
-                                        ? palette.text.primary
-                                        : palette.text.primary,
+                                    color: 'text.primary',
                                     border: ({ palette }) => palette.mode === 'light'
                                         ? `1px solid ${palette.grey[300]}`
                                         : `1px solid ${palette.grey[800]}`
@@ -213,7 +211,7 @@ function Columns() {
                                     <Stack direction="column" spacing={1}
                                         ref={provided.innerRef}
                                         {...provided.droppableProps}
-                                        sx={{ minHeight: 'calc(100vh - 310px)' }}
+                                        sx={{ minHeight: 'calc(100vh - 350px)' }}
                                     >
                                         <ListCards column={slug(column)} />
                                         {provided.placeholder}
