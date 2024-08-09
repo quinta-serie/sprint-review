@@ -57,10 +57,10 @@ export default function Signin() {
                                 <Stack spacing={2}>
                                     <Box>
                                         <Typography gutterBottom variant="h5" component="div">
-                                            Signin
+                                            Login
                                         </Typography>
                                         <Typography gutterBottom variant="body2" component="p">
-                                            Use your account google to signin
+                                            Use sua conta do Google para acessar o Sprint Review.
                                         </Typography>
                                     </Box>
                                     <Button
@@ -70,7 +70,7 @@ export default function Signin() {
                                         startIcon={<GoogleIcon />}
                                         onClick={signinWithGoogle}
                                     >
-                                        Sign in with google
+                                        Entrar com Google
                                     </Button>
                                 </Stack>
                             </CardContent>
@@ -79,7 +79,7 @@ export default function Signin() {
                             variant="body2"
                             sx={{ mt: 2, textAlign: 'center', color: (theme) => theme.palette.text.primary }}
                         >
-                            Copyright © 2024, Sprint Retro
+                            Copyright © 2024, Sprint Review
                         </Typography>
                     </Box>
                 </Zoom>

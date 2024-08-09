@@ -237,9 +237,9 @@ function Footer({ id, whoLiked, column }: FooterProps) {
 }
 
 function FakeMessage({ text }: Pick<CardData, 'text'>) {
-    const widthArr = ['20%', '40%', '60%', '80%', '100%'];
+    const widthArr = ['40%', '60%', '80%', '100%'];
 
-    const skeletons = new Array(Math.ceil(text.length / 60)).fill('');
+    const skeletons = new Array(Math.ceil(text.length / 40)).fill('');
 
     const linesWidth = useMemo(() => skeletons.map(() => getRandom(widthArr)), [text]);
 
@@ -261,21 +261,23 @@ function FakeMessage({ text }: Pick<CardData, 'text'>) {
 }
 
 export default function BoadCard(data: CardData) {
-    const { board, isOwner } = useBoard();
+    const { board } = useBoard();
 
     const { id, color, text, whoLiked, column } = data;
 
     const { hideCardsAutor, hideCardsInitially } = board.template;
+
+    const isCardOwner = userServices.current.user_id === data.owner.id;
 
     const buildMessage = text.replace(/\/n/g, '\n');
 
     return (
         <Card sx={{ bgcolor: color, color: (theme) => theme.palette.common.white }}>
             {
-                (!hideCardsAutor || isOwner) && (
+                isCardOwner && (
                     <Header
                         {...data}
-                        isOwner={isOwner}
+                        isOwner={isCardOwner}
                         hideCardsAutor={hideCardsAutor}
                     />
                 )
@@ -283,9 +285,9 @@ export default function BoadCard(data: CardData) {
             <CardContent sx={{
                 wordBreak: 'break-all',
                 whiteSpace: 'pre-wrap',
-                pt: isOwner || !hideCardsAutor ? 0 : 'auto',
+                pt: isCardOwner || !hideCardsAutor ? 0 : 'auto',
             }}>
-                {hideCardsInitially && !isOwner ? <FakeMessage text={text} /> : buildMessage}
+                {hideCardsInitially && !isCardOwner ? <FakeMessage text={text} /> : buildMessage}
             </CardContent>
             <Divider />
             <Footer id={id} column={column} whoLiked={whoLiked} />

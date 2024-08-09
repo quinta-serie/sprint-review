@@ -2,7 +2,7 @@ import DB from '@/services/db';
 import { uuid } from '@/utils/uuid';
 import { slug } from '@/utils/string';
 
-import type { BoardData } from './interface';
+import type { BoardData, CardData } from './interface';
 
 export default class Board {
     private static PATH = 'boards';
@@ -45,6 +45,15 @@ export default class Board {
             data,
             path: Board.PATH,
             pathSegments: [data.id],
+        });
+    }
+
+    async insertCard(boardId: string, data: CardData) {
+        return this.db.insert<CardData, BoardData>({
+            data,
+            path: Board.PATH,
+            pathSegments: [boardId],
+            pathData: `cards.${slug(data.column)}`,
         });
     }
 

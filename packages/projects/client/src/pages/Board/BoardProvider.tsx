@@ -87,16 +87,7 @@ export default function BoardProvider({ children }: BoardProviderProps) {
     };
 
     const addCard = async (card: CardData) => {
-        const columnSlug = slug(card.column);
-        const newCards: BoardData['cards'] = {
-            ...board.cards,
-            [columnSlug]: [...board.cards[columnSlug], card],
-        };
-
-        return boardServices.updateBoard({
-            ...board,
-            cards: newCards,
-        }).then(() => setBoard(prev => ({ ...prev, cards: newCards })));
+        boardServices.insertCard(board.id, card);
     };
 
     const favoriteCard = async ({ id, column }: FavoriteCardData) => {

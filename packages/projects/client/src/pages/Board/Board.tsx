@@ -146,24 +146,24 @@ function ListCards({ column }: ListCardsProps) {
     const { board } = useBoard();
 
     return (
-        board.cards[column]
-            .map((card, index) => (
-                <Draggable
-                    key={card.id}
-                    index={index}
-                    draggableId={card.id}
-                >
-                    {(provided) => (
-                        <div
-                            {...provided.draggableProps}
-                            {...provided.dragHandleProps}
-                            ref={provided.innerRef}
-                        >
-                            <BoadCard {...card} />
-                        </div>
-                    )}
-                </Draggable>
-            ))
+        board.cards[column] &&
+        board.cards[column].map((card, index) => (
+            <Draggable
+                key={card.id}
+                index={index}
+                draggableId={card.id}
+            >
+                {(provided) => (
+                    <div
+                        {...provided.draggableProps}
+                        {...provided.dragHandleProps}
+                        ref={provided.innerRef}
+                    >
+                        <BoadCard {...card} />
+                    </div>
+                )}
+            </Draggable>
+        ))
     );
 }
 

@@ -25,7 +25,7 @@ const CustomContentCard = styled(CardContent)(({ theme }) => ({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: theme.palette.secondary.main,
+        backgroundColor: theme.palette.background.default,
     },
 }));
 
@@ -48,11 +48,14 @@ function TemplateCards(template: HotTemplates<State>) {
                             ? <CustomContentCard>
                                 {template.icon}
                             </CustomContentCard>
-                            : <CardContent>
+                            : <CardContent sx={{
+                                backgroundColor: (theme) => theme.palette.background.default,
+                            }}>
                                 <CardMedia
                                     component="img"
                                     image={template.img}
                                     alt={template.name}
+
                                 />
                             </CardContent>
                     }

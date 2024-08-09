@@ -29,7 +29,7 @@ export default [
     {
         name: 'Nova retrô',
         state: 'new',
-        icon: <AddIcon sx={{ fontSize: 40 }} />
+        icon: <AddIcon color="primary" sx={{ fontSize: 40 }} />
     },
     {
         name: 'Retrô padrão',
