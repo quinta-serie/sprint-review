@@ -179,7 +179,7 @@ export default function TemplateForm({
                     <Typography variant="subtitle2" color="text.primary" gutterBottom>Configurações</Typography>
                     <MuiFormGroup>
                         <FormControlLabel
-                            label="Ocultar cards inicialmente"
+                            label="Ocultar cards"
                             sx={{ color: 'text.primary' }}
                             control={
                                 <Control

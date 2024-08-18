@@ -78,16 +78,18 @@ function MenuOptions({ open, anchorEl, onClose, ...cardData }: MenuBoardProps) {
     );
 }
 
-interface HeaderProps extends CardData { isOwner: boolean; hideCardsAutor: boolean; }
-function Header({ isOwner, hideCardsAutor, ...cardData }: HeaderProps) {
+interface HeaderProps extends CardData { isCardOwner: boolean; hideCardsAutor: boolean; }
+function Header({ isCardOwner, hideCardsAutor, ...cardData }: HeaderProps) {
     const { open, anchorEl, handleClose, handleOpen } = useMenu();
 
     const { owner } = cardData;
 
+    console.log('hideCardsAutor', hideCardsAutor);
+
     return (
         <>
             <CardHeader
-                sx={{ pb: !hideCardsAutor ? 'auto' : 0 }}
+                sx={{ pb: 0 }}
                 subheader={
                     !hideCardsAutor && (
                         <Stack direction="row" alignItems="center" spacing={1}>
@@ -102,17 +104,14 @@ function Header({ isOwner, hideCardsAutor, ...cardData }: HeaderProps) {
                                     color: ({ palette }) => palette.common.white
                                 }}
                             />
-                            <Typography
-                                variant="body2"
-                                color="white"
-                            >
+                            <Typography variant="body2" color="white">
                                 {owner.name}
                             </Typography>
                         </Stack>
                     )
                 }
                 action={
-                    isOwner && (
+                    isCardOwner && (
                         <IconButton
                             onClick={handleOpen}
                             aria-label="settings"
@@ -263,21 +262,21 @@ function FakeMessage({ text }: Pick<CardData, 'text'>) {
 export default function BoadCard(data: CardData) {
     const { board } = useBoard();
 
-    const { id, color, text, whoLiked, column } = data;
+    const { id, color, text, whoLiked, column, owner } = data;
 
     const { hideCardsAutor, hideCardsInitially } = board.template;
 
-    const isCardOwner = userServices.current.user_id === data.owner.id;
+    const isCardOwner = userServices.current.user_id === owner.id;
 
     const buildMessage = text.replace(/\/n/g, '\n');
 
     return (
         <Card sx={{ bgcolor: color, color: (theme) => theme.palette.common.white }}>
             {
-                isCardOwner && (
+                (isCardOwner || !hideCardsAutor) && (
                     <Header
                         {...data}
-                        isOwner={isCardOwner}
+                        isCardOwner={isCardOwner}
                         hideCardsAutor={hideCardsAutor}
                     />
                 )
@@ -285,7 +284,6 @@ export default function BoadCard(data: CardData) {
             <CardContent sx={{
                 wordBreak: 'break-all',
                 whiteSpace: 'pre-wrap',
-                pt: isCardOwner || !hideCardsAutor ? 0 : 'auto',
             }}>
                 {hideCardsInitially && !isCardOwner ? <FakeMessage text={text} /> : buildMessage}
             </CardContent>

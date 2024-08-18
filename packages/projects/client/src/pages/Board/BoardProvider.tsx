@@ -254,43 +254,45 @@ export default function BoardProvider({ children }: BoardProviderProps) {
     };
 
     const changeCardPosition = async (originCard: CardData, position: number, column: string) => {
-        const cardsFallback = deepCopy(board.cards);
-        const cloneCards = deepCopy(board.cards);
-        const columnSlug = slug(column);
-        const columnOriginSlug = slug(originCard.column);
+        // boardServices.reorderCards(board.id, originCard);
 
-        const isSameColumn = column === originCard.column;
+        // const cardsFallback = deepCopy(board.cards);
+        // const cloneCards = deepCopy(board.cards);
+        // const columnSlug = slug(column);
+        // const columnOriginSlug = slug(originCard.column);
 
-        const indexColumn = board.template.columns.findIndex(col => col === column);
-        const buildedCardOrigin: CardData = { ...originCard, column, color: COLORS[indexColumn] };
-        const originCardIndex = cloneCards[columnOriginSlug].findIndex(card => card.id === originCard.id);
+        // const isSameColumn = column === originCard.column;
 
-        if (isSameColumn) {
-            const isBottomup = originCardIndex > position;
+        // const indexColumn = board.template.columns.findIndex(col => col === column);
+        // const buildedCardOrigin: CardData = { ...originCard, column, color: COLORS[indexColumn] };
+        // const originCardIndex = cloneCards[columnOriginSlug].findIndex(card => card.id === originCard.id);
 
-            // add reorded card
-            cloneCards[columnSlug]
-                .splice(isBottomup ? position : position + 1, 0, buildedCardOrigin);
+        // if (isSameColumn) {
+        //     const isBottomup = originCardIndex > position;
 
-            // remove old card
-            cloneCards[columnOriginSlug]
-                .splice(isBottomup ? originCardIndex + 1 : position - 1, 1);
-        } else {
-            // add reorded card
-            cloneCards[columnSlug]
-                .splice(position, 0, buildedCardOrigin);
+        //     // add reorded card
+        //     cloneCards[columnSlug]
+        //         .splice(isBottomup ? position : position + 1, 0, buildedCardOrigin);
 
-            // remove old card
-            cloneCards[columnOriginSlug]
-                .splice(originCardIndex, 1);
-        }
+        //     // remove old card
+        //     cloneCards[columnOriginSlug]
+        //         .splice(isBottomup ? originCardIndex + 1 : position - 1, 1);
+        // } else {
+        //     // add reorded card
+        //     cloneCards[columnSlug]
+        //         .splice(position, 0, buildedCardOrigin);
 
-        setBoard(prev => ({ ...prev, cards: cloneCards }));
+        //     // remove old card
+        //     cloneCards[columnOriginSlug]
+        //         .splice(originCardIndex, 1);
+        // }
 
-        return boardServices.updateBoard({
-            ...board,
-            cards: cloneCards,
-        }).catch(() => setBoard(prev => ({ ...prev, cards: cardsFallback })));
+        // setBoard(prev => ({ ...prev, cards: cloneCards }));
+
+        // return boardServices.updateBoard({
+        //     ...board,
+        //     cards: cloneCards,
+        // }).catch(() => setBoard(prev => ({ ...prev, cards: cardsFallback })));
     };
 
     return (
