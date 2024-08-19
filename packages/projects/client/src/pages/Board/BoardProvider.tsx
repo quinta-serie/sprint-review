@@ -4,7 +4,7 @@ import { slug } from '@/utils/string';
 import { wait } from '@/utils/promise';
 import { deepCopy } from '@/utils/object';
 import { defaultTemplate } from '@/services/template';
-import { boardServices, COLORS, userServices } from '@/services/core';
+import { boardServices, userServices } from '@/services/core';
 import type { BoardData, BoardDataConfig, CardData } from '@/services/board';
 
 type FavoriteCardData = { id: string; column: string };
@@ -23,7 +23,7 @@ interface BoardContextConfig {
     unFavoriteCard: (dataCard: FavoriteCardData) => Promise<void>;
     updateTemplateConfig: (template: BoardDataConfig) => Promise<void>;
     editCardText: (cardId: string, cardColumn: string, text: string) => Promise<void>;
-    changeCardPosition: (originCard: CardData, position: number, column: string) => void;
+    reorderCard: (originCard: CardData, position: number) => void;
 }
 
 const defaultBoard: BoardData = {
@@ -45,7 +45,7 @@ export const BoardContext = createContext<BoardContextConfig>({
     isOwner: false,
     mergeCards: () => null,
     loadBoard: () => defaultBoard,
-    changeCardPosition: () => null,
+    reorderCard: () => null,
     addCard: () => new Promise(() => null),
     deleteCard: () => new Promise(() => null),
     removeTimer: () => new Promise(() => null),
@@ -64,8 +64,8 @@ export default function BoardProvider({ children }: BoardProviderProps) {
     const { email, user_id } = userServices.current;
 
     const context = useMemo<BoardContextConfig>(() => ({
-        loading,
         board,
+        loading,
         isOwner: board.ownerId === user_id,
         addCard: (card) => addCard(card),
         removeTimer: () => removeTimer(),
@@ -77,7 +77,7 @@ export default function BoardProvider({ children }: BoardProviderProps) {
         unFavoriteCard: ({ id, column }) => unFavoriteCard({ id, column }),
         updateTemplateConfig: (template) => updateTemplateConfig(template),
         editCardText: (cardId, cardColumn, text) => editCardText(cardId, cardColumn, text),
-        changeCardPosition: (cardId, position, column) => changeCardPosition(cardId, position, column),
+        reorderCard: (cardId, position) => reorderCard(cardId, position),
     }), [board, loading]);
 
     const getBoardDetails = async (boardId: string) => {
@@ -253,8 +253,41 @@ export default function BoardProvider({ children }: BoardProviderProps) {
         }).catch(() => setBoard(prev => ({ ...prev })));
     };
 
-    const changeCardPosition = async (originCard: CardData, position: number, column: string) => {
-        // boardServices.reorderCards(board.id, originCard);
+    const reorderCard = async (originCard: CardData, position: number) => {
+        const column = slug(originCard.column);
+
+        const cardsFallback = deepCopy(board.cards[column]);
+
+        const currentColumnCards = board.cards[column];
+        const currentIndex = currentColumnCards.findIndex(({ id }) => id === originCard.id);
+
+        const indexToInsert = position > currentIndex ? position - 1 : position;
+
+        // Remove old card
+        const newColumnCards = currentColumnCards.filter(({ id }) => id !== originCard.id);
+
+        // Add new card
+        newColumnCards.splice(indexToInsert, 0, originCard);
+
+        setBoard(prev => ({
+            ...prev,
+            cards: {
+                ...prev.cards,
+                [column]: newColumnCards,
+            },
+        }));
+
+        boardServices.reorderCards({ card: originCard, boardId: board.id, position })
+            .then((res) => console.log('reorderCard', res))
+            .catch(() =>
+                setBoard(prev => ({
+                    ...prev,
+                    cards: {
+                        ...prev.cards,
+                        [column]: cardsFallback,
+                    },
+                }))
+            );
 
         // const cardsFallback = deepCopy(board.cards);
         // const cloneCards = deepCopy(board.cards);

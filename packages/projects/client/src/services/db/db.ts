@@ -1,23 +1,20 @@
-import type { Firestore, DocumentData, WithFieldValue, WhereFilterOp } from 'firebase/firestore';
+import type { Firestore, DocumentData, WithFieldValue, WhereFilterOp, Transaction } from 'firebase/firestore';
 import {
-    doc, setDoc, query, collection, where, onSnapshot, getDocs, arrayUnion, updateDoc
+    doc,
+    query,
+    where,
+    setDoc,
+    getDocs,
+    updateDoc,
+    collection,
+    onSnapshot,
+    arrayUnion,
+    runTransaction
 } from 'firebase/firestore';
 
+import { Path, PathValue, ArrayOrObject } from '@/utils/interface';
+
 type Field = WithFieldValue<DocumentData>;
-
-type ArrayOrObject<T> = T extends Array<infer U> ? U : T;
-
-type MaxDepth = 5;
-
-type Path<T, P extends string = '', D extends unknown[] = []> = D['length'] extends MaxDepth
-    ? ''
-    : T extends object
-    ? {
-        [K in keyof T]: K extends string
-        ? `${P}${P extends '' ? '' : '.'}${K}` | Path<T[K], `${P}${P extends '' ? '' : '.'}${K}`, [...D, unknown]>
-        : never;
-    }[keyof T]
-    : '';
 
 type CollectionData<
     F extends Field,
@@ -29,6 +26,9 @@ type CollectionData<
     path: string;
     pathSegments: string[];
     pathData: Path<S>;
+    callback: (data: S) => Partial<{
+        [P in Path<S>]: PathValue<S, P>;
+    }>;
     filters: Array<{
         field: K;
         operator: WhereFilterOp;
@@ -36,9 +36,13 @@ type CollectionData<
     }>;
 };
 
-type CollectionWithData<F extends Field> = Omit<CollectionData<F>, 'filters' | 'pathData'>;
-type CollectionWithFilters<F extends Field> = Omit<CollectionData<F>, 'data' | 'pathData'>;
-type CollectionWithPathData<F extends Field, S extends F[keyof F]> = Omit<CollectionData<F, S>, 'filters'>;
+type CollectionWithData<F extends Field> = Omit<CollectionData<F>, 'filters' | 'pathData' | 'callback'>;
+type CollectionWithFilters<F extends Field> = Omit<CollectionData<F>, 'data' | 'pathData' | 'callback'>;
+type CollectionWithOnlyPaths<F extends Field> = Omit<CollectionData<F>, 'data' | 'filters' | 'pathData' | 'callback'>;
+type CollectionWithPathData<F extends Field, S extends F[keyof F]> = Omit<CollectionData<F, S>, 'filters' | 'callback'>;
+type CollectionWithCallback<F extends Field, S extends F[keyof F]> = Omit<CollectionData<F, S>,
+    'data' | 'filters' | 'pathData'
+>;
 
 export default class DB {
     constructor(private db: Firestore) { }
@@ -85,6 +89,38 @@ export default class DB {
             .then((querySnapshot) => {
                 return querySnapshot.docs.map<F>((doc) => doc.data() as F);
             });
+    }
+
+    public transaction<F extends Field, Segment extends F[keyof F]>({
+        path,
+        callback,
+        pathSegments
+    }: CollectionWithCallback<F, Segment>) {
+        const ref = doc(this.db, path, ...pathSegments);
+
+        return runTransaction(this.db, async (transaction) => {
+            const doc = await transaction.get(ref);
+
+            if (!doc.exists()) { throw new Error('Column not found!'); }
+
+            const result = callback(doc.data() as Segment);
+
+            console.log('result', result);
+
+            // transaction.update(ref, result);
+        });
+    }
+
+    public async transaction1<F extends Field>() {
+        const getRef = ({ path, pathSegments }: CollectionWithOnlyPaths<F>) => doc(this.db, path, ...pathSegments);
+
+        const transaction = async (callback: (t: Transaction) => void) => {
+            return await runTransaction(this.db, async (transaction) => {
+                return callback(transaction);
+            });
+        };
+
+        return { getRef, transaction };
     }
 
     public subscription<F extends Field>(

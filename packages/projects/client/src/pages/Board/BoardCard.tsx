@@ -84,8 +84,6 @@ function Header({ isCardOwner, hideCardsAutor, ...cardData }: HeaderProps) {
 
     const { owner } = cardData;
 
-    console.log('hideCardsAutor', hideCardsAutor);
-
     return (
         <>
             <CardHeader
@@ -106,6 +104,7 @@ function Header({ isCardOwner, hideCardsAutor, ...cardData }: HeaderProps) {
                             />
                             <Typography variant="body2" color="white">
                                 {owner.name}
+                                {/* {cardData.id.split('-')[4]} */}
                             </Typography>
                         </Stack>
                     )

@@ -238,8 +238,6 @@ export default function Default({ children }: IProps) {
 
     const open = Boolean(anchorEl);
 
-    console.log('Default', { name, email, picture });
-
     useEffect(() => {
         const unsubscribe = inviteServices.subscription(email, (invite) => {
             const isSent = invite.status === 'sent';

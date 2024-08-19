@@ -4,6 +4,12 @@ import { slug } from '@/utils/string';
 
 import type { BoardData, CardData } from './interface';
 
+type ReorderCards = {
+    card: CardData;
+    boardId: string;
+    position: number;
+};
+
 export default class Board {
     private static PATH = 'boards';
 
@@ -54,6 +60,35 @@ export default class Board {
             path: Board.PATH,
             pathSegments: [boardId],
             pathData: `cards.${slug(data.column)}`,
+        });
+    }
+
+    async reorderCards({ card, boardId, position }: ReorderCards) {
+        const { getRef, transaction } = await this.db.transaction1<CardData>();
+
+        const columnRef = getRef({ path: Board.PATH, pathSegments: [boardId] });
+
+        return transaction(async (t) => {
+            const snap = await t.get(columnRef);
+            const column = slug(card.column);
+
+            if (!snap.exists()) { throw new Error('Column not found!'); }
+
+            const currentCards = snap.data() as BoardData;
+            const currentColumnCards = currentCards.cards[column];
+            const currentIndex = currentColumnCards.findIndex(({ id }) => id === card.id);
+
+            const indexToInsert = position > currentIndex ? position - 1 : position;
+
+            // Remove old card
+            const newColumnCards = currentColumnCards.filter(({ id }) => id !== card.id);
+
+            // Add new card
+            newColumnCards.splice(indexToInsert, 0, card);
+
+            t.update(columnRef, {
+                [`cards.${column}`]: newColumnCards,
+            });
         });
     }
 

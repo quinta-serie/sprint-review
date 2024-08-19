@@ -221,7 +221,6 @@ function Columns() {
                             <DialogCardText open={open} onClose={toggleDialog} index={index} action="create" />
                         </Stack>
                     </Grid>
-
                 ))
             }
         </Grid >
@@ -327,7 +326,7 @@ export default function Board() {
     const { boardId } = useParams<{ boardId: string; }>();
     const [open, setOpen] = useState(false);
     const [cardsReference, setCardsReference] = useState<{ origin: CardData; target: CardData }>();
-    const { board, loading, getBoardDetails, loadBoard, changeCardPosition } = useBoard();
+    const { board, loading, getBoardDetails, loadBoard, reorderCard } = useBoard();
 
     useEffect(() => { getBoardDetails(boardId as string); }, []);
 
@@ -347,7 +346,7 @@ export default function Board() {
 
         const origin = board.cards[slug(droppableId)].find(card => card.id === result.draggableId) as CardData;
 
-        // dropped in another card
+        // Dropping in another card
         if (result.combine) {
             const target = board.cards[slug(result.combine?.droppableId)]
                 .find(card => card.id === result.combine?.draggableId) as CardData;
@@ -358,14 +357,17 @@ export default function Board() {
             return;
         }
 
-        // dropped outside the list
+        // Dropping outside the list
         if (!result.destination) { return; }
 
-        // dropped in the same position
+        // Dropping in the same position
         if (result.destination.index === result.source.index && origin.column === column) { return; }
 
-        // dropped in another position
-        changeCardPosition(origin, result.destination.index, column);
+        // Dropping in the same column
+        if (origin.column === column) { reorderCard(origin, result.destination.index); }
+
+        // Dropping in the other column
+        if (origin.column !== column) { console.log('OTHER', result); }
     };
 
     return (
