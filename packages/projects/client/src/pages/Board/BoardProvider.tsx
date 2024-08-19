@@ -6,6 +6,14 @@ import { deepCopy } from '@/utils/object';
 import { defaultTemplate } from '@/services/template';
 import { boardServices, userServices } from '@/services/core';
 import type { BoardData, BoardDataConfig, CardData } from '@/services/board';
+import {
+    _editCard,
+    _favoriteCard,
+    _unFavoriteCard,
+    _generateNewOrderedColumn,
+    _mergeCardInTheSameColumn,
+    _mergeCardsInDiferentColumns,
+} from '@/services/board/boardUtilities';
 
 type FavoriteCardData = { id: string; column: string };
 
@@ -74,10 +82,10 @@ export default function BoardProvider({ children }: BoardProviderProps) {
         mergeCards: (origin, target) => mergeCards(origin, target),
         favoriteCard: ({ id, column }) => favoriteCard({ id, column }),
         deleteCard: (cardId, columCard) => deleteCard(cardId, columCard),
+        reorderCard: (cardId, position) => reorderCard(cardId, position),
         unFavoriteCard: ({ id, column }) => unFavoriteCard({ id, column }),
         updateTemplateConfig: (template) => updateTemplateConfig(template),
         editCardText: (cardId, cardColumn, text) => editCardText(cardId, cardColumn, text),
-        reorderCard: (cardId, position) => reorderCard(cardId, position),
     }), [board, loading]);
 
     const getBoardDetails = async (boardId: string) => {
@@ -93,49 +101,33 @@ export default function BoardProvider({ children }: BoardProviderProps) {
     const favoriteCard = async ({ id, column }: FavoriteCardData) => {
         const columnSlug = slug(column);
 
-        const columnCardUpdated = board.cards[columnSlug]
-            .map(card => {
-                if (card.id !== id) { return card; }
+        const cardsFallback = deepCopy(board.cards[column]);
 
-                card.whoLiked.push(email);
+        const updatedColumn = _favoriteCard(board.cards[columnSlug], id, email);
 
-                return card;
-            });
+        setBoard(prev => ({ ...prev, cards: { ...prev.cards, [column]: updatedColumn } }));
 
-        const boardColumnsUpdated = {
-            ...board.cards,
-            [columnSlug]: columnCardUpdated,
-        };
-
-        return boardServices.updateBoard({
-            ...board,
-            cards: boardColumnsUpdated,
-        }).then(() => setBoard(prev => ({ ...prev, cards: boardColumnsUpdated })));
+        return boardServices.updateBoardColumn({ column: columnSlug, boardId: board.id }, (b) => {
+            return _favoriteCard(b.cards[columnSlug], id, email);
+        }).catch(() => {
+            setBoard(prev => ({ ...prev, cards: { ...prev.cards, [columnSlug]: cardsFallback } }));
+        });
     };
 
     const unFavoriteCard = async ({ id, column }: FavoriteCardData) => {
         const columnSlug = slug(column);
 
-        const columnCardUpdated = board.cards[columnSlug]
-            .map(card => {
-                if (card.id !== id) { return card; }
+        const cardsFallback = deepCopy(board.cards[column]);
 
-                const index = card.whoLiked.findIndex(e => e === email);
+        const updatedColumn = _unFavoriteCard(board.cards[columnSlug], id, email);
 
-                card.whoLiked.splice(index, 1);
+        setBoard(prev => ({ ...prev, cards: { ...prev.cards, [column]: updatedColumn } }));
 
-                return card;
-            });
-
-        const boardColumnsUpdated = {
-            ...board.cards,
-            [columnSlug]: columnCardUpdated,
-        };
-
-        return boardServices.updateBoard({
-            ...board,
-            cards: boardColumnsUpdated,
-        }).then(() => setBoard(prev => ({ ...prev, cards: boardColumnsUpdated })));
+        return boardServices.updateBoardColumn({ column: columnSlug, boardId: board.id }, (b) => {
+            return _unFavoriteCard(b.cards[columnSlug], id, email);
+        }).catch(() => {
+            setBoard(prev => ({ ...prev, cards: { ...prev.cards, [columnSlug]: cardsFallback } }));
+        });
     };
 
     const deleteCard = async (cardId: string, cardColumn: string) => {
@@ -179,68 +171,76 @@ export default function BoardProvider({ children }: BoardProviderProps) {
     const editCardText = async (cardId: string, cardColumn: string, text: string) => {
         const columnSlug = slug(cardColumn);
 
-        const columnCardUpdated = board.cards[columnSlug]
-            .map(card => {
-                if (card.id !== cardId) { return card; }
+        const cardsFallback = deepCopy(board.cards[columnSlug]);
 
-                card.text = text;
+        const updatedColumn = _editCard(board.cards[columnSlug], cardId, text);
 
-                return card;
-            });
+        setBoard(prev => ({ ...prev, cards: { ...prev.cards, [cardColumn]: updatedColumn } }));
 
-        const boardColumnsUpdated = {
-            ...board.cards,
-            [columnSlug]: columnCardUpdated,
-        };
-
-        return boardServices.updateBoard({
-            ...board,
-            cards: boardColumnsUpdated,
-        }).then(() => setBoard(prev => ({ ...prev, cards: boardColumnsUpdated })));
+        return boardServices.updateBoardColumn({ column: columnSlug, boardId: board.id }, (b) => {
+            return _editCard(b.cards[columnSlug], cardId, text);
+        }).catch(() => {
+            setBoard(prev => ({ ...prev, cards: { ...prev.cards, [columnSlug]: cardsFallback } }));
+        });
     };
 
     const mergeCards = async (origin: CardData, target: CardData) => {
-        const cardsFallback = deepCopy(board.cards);
+        const columnOriginSlug = slug(origin.column);
+        const columnTargetSlug = slug(target.column);
+        const cardsOriginFallback = deepCopy(board.cards[columnOriginSlug]);
+        const cardsTargetFallback = deepCopy(board.cards[columnTargetSlug]);
 
-        const newCard = {
-            ...target,
-            text: [target.text, '\n\n------------ \n\n', origin.text].join(' '),
-            whoLiked: [...new Set([...origin.whoLiked, ...target.whoLiked])],
-        };
+        const isTheSameColumn = origin.column === target.column;
 
-        let boardColumnsUpdated: BoardData['cards'];
+        if (isTheSameColumn) {
+            const newCard = _mergeCardInTheSameColumn(board.cards[columnOriginSlug], target, origin);
 
-        if (origin.column !== target.column) {
-            const columnOriginWithoutOrigin = board.cards[slug(origin.column)]
-                .filter(card => card.id !== origin.id);
+            setBoard(prev => ({ ...prev, cards: { ...prev.cards, [columnOriginSlug]: newCard } }));
 
-            const columnWithMergedTarget = board.cards[slug(target.column)]
-                .map(card => card.id === target.id ? newCard : card);
-
-            boardColumnsUpdated = {
-                ...board.cards,
-                [slug(origin.column)]: columnOriginWithoutOrigin,
-                [slug(target.column)]: columnWithMergedTarget,
-            };
-
-            setBoard(prev => ({ ...prev, cards: boardColumnsUpdated }));
+            boardServices.updateBoardColumn({ column: columnOriginSlug, boardId: board.id }, (b) => {
+                return _mergeCardInTheSameColumn(b.cards[columnOriginSlug], target, origin);
+            }).catch(() => {
+                setBoard(prev => ({ ...prev, cards: { ...prev.cards, [columnOriginSlug]: cardsOriginFallback } }));
+            });
         } else {
-            const columnUpdated = board.cards[slug(origin.column)]
-                .map(card => card.id === target.id ? newCard : card)
-                .filter(card => card.id !== origin.id);
+            const { updatedColumnOrigin, updatedColumnTarget } = _mergeCardsInDiferentColumns({
+                origin: { card: origin, column: board.cards[columnOriginSlug] },
+                target: { card: target, column: board.cards[columnTargetSlug] },
+            });
 
-            boardColumnsUpdated = {
-                ...board.cards,
-                [slug(origin.column)]: columnUpdated,
-            };
+            setBoard(prev => ({
+                ...prev,
+                cards: {
+                    ...prev.cards,
+                    [columnOriginSlug]: updatedColumnOrigin,
+                    [columnTargetSlug]: updatedColumnTarget,
+                }
+            }));
 
-            setBoard(prev => ({ ...prev, cards: boardColumnsUpdated }));
+            boardServices.mergeCardsInDiferentColumns({
+                boardId: board.id,
+                originColumn: columnOriginSlug,
+                targetColumn: columnTargetSlug
+            }, (b) => {
+                const { updatedColumnOrigin, updatedColumnTarget } = _mergeCardsInDiferentColumns({
+                    origin: { card: origin, column: b.cards[columnOriginSlug] },
+                    target: { card: target, column: b.cards[columnTargetSlug] },
+                });
+
+                return {
+                    updatedOriginColumn: updatedColumnOrigin,
+                    updatedTargetColumn: updatedColumnTarget,
+                };
+            }).catch(() => {
+                setBoard(prev => ({
+                    ...prev, cards: {
+                        ...prev.cards,
+                        [columnOriginSlug]: cardsOriginFallback,
+                        [columnTargetSlug]: cardsTargetFallback
+                    }
+                }));
+            });
         }
-
-        return boardServices.updateBoard({
-            ...board,
-            cards: boardColumnsUpdated,
-        }).catch(() => setBoard(prev => ({ ...prev, cards: cardsFallback })));
     };
 
     const removeTimer = async () => {
@@ -258,74 +258,15 @@ export default function BoardProvider({ children }: BoardProviderProps) {
 
         const cardsFallback = deepCopy(board.cards[column]);
 
-        const currentColumnCards = board.cards[column];
-        const currentIndex = currentColumnCards.findIndex(({ id }) => id === originCard.id);
+        const newColumnCards = _generateNewOrderedColumn(board.cards[column], originCard, position);
 
-        const indexToInsert = position > currentIndex ? position - 1 : position;
-
-        // Remove old card
-        const newColumnCards = currentColumnCards.filter(({ id }) => id !== originCard.id);
-
-        // Add new card
-        newColumnCards.splice(indexToInsert, 0, originCard);
-
-        setBoard(prev => ({
-            ...prev,
-            cards: {
-                ...prev.cards,
-                [column]: newColumnCards,
-            },
-        }));
+        setBoard(prev => ({ ...prev, cards: { ...prev.cards, [column]: newColumnCards } }));
 
         boardServices.reorderCards({ card: originCard, boardId: board.id, position })
             .then((res) => console.log('reorderCard', res))
             .catch(() =>
-                setBoard(prev => ({
-                    ...prev,
-                    cards: {
-                        ...prev.cards,
-                        [column]: cardsFallback,
-                    },
-                }))
+                setBoard(prev => ({ ...prev, cards: { ...prev.cards, [column]: cardsFallback } }))
             );
-
-        // const cardsFallback = deepCopy(board.cards);
-        // const cloneCards = deepCopy(board.cards);
-        // const columnSlug = slug(column);
-        // const columnOriginSlug = slug(originCard.column);
-
-        // const isSameColumn = column === originCard.column;
-
-        // const indexColumn = board.template.columns.findIndex(col => col === column);
-        // const buildedCardOrigin: CardData = { ...originCard, column, color: COLORS[indexColumn] };
-        // const originCardIndex = cloneCards[columnOriginSlug].findIndex(card => card.id === originCard.id);
-
-        // if (isSameColumn) {
-        //     const isBottomup = originCardIndex > position;
-
-        //     // add reorded card
-        //     cloneCards[columnSlug]
-        //         .splice(isBottomup ? position : position + 1, 0, buildedCardOrigin);
-
-        //     // remove old card
-        //     cloneCards[columnOriginSlug]
-        //         .splice(isBottomup ? originCardIndex + 1 : position - 1, 1);
-        // } else {
-        //     // add reorded card
-        //     cloneCards[columnSlug]
-        //         .splice(position, 0, buildedCardOrigin);
-
-        //     // remove old card
-        //     cloneCards[columnOriginSlug]
-        //         .splice(originCardIndex, 1);
-        // }
-
-        // setBoard(prev => ({ ...prev, cards: cloneCards }));
-
-        // return boardServices.updateBoard({
-        //     ...board,
-        //     cards: cloneCards,
-        // }).catch(() => setBoard(prev => ({ ...prev, cards: cardsFallback })));
     };
 
     return (

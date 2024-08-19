@@ -3,12 +3,10 @@ import { uuid } from '@/utils/uuid';
 import { slug } from '@/utils/string';
 
 import type { BoardData, CardData } from './interface';
+import { _generateNewOrderedColumn } from './boardUtilities';
 
-type ReorderCards = {
-    card: CardData;
-    boardId: string;
-    position: number;
-};
+type MethodPattern = { card: CardData; boardId: string; column: string; }
+type ReorderCards = Omit<MethodPattern, 'column'> & { position: number; };
 
 export default class Board {
     private static PATH = 'boards';
@@ -54,6 +52,53 @@ export default class Board {
         });
     }
 
+    async updateBoardColumn(
+        { column, boardId }: Omit<MethodPattern, 'card'>,
+        callback: (b: BoardData) => CardData[]
+    ): Promise<void> {
+        const { getRef, transaction } = await this.db.transaction1<CardData>();
+
+        const columnRef = getRef({ path: Board.PATH, pathSegments: [boardId] });
+
+        return transaction(async (t) => {
+            const snap = await t.get(columnRef);
+
+            if (!snap.exists()) { throw new Error('Column not found!'); }
+
+            const currentCards = snap.data() as BoardData;
+
+            const result = callback(currentCards);
+
+            t.update(columnRef, {
+                [`cards.${column}`]: result,
+            });
+        });
+    }
+
+    async mergeCardsInDiferentColumns(
+        { targetColumn, originColumn, boardId }: { targetColumn: string; originColumn: string; boardId: string },
+        callback: (b: BoardData) => { updatedOriginColumn: CardData[], updatedTargetColumn: CardData[] }
+    ): Promise<void> {
+        const { getRef, transaction } = await this.db.transaction1<CardData>();
+
+        const boardRef = getRef({ path: Board.PATH, pathSegments: [boardId] });
+
+        return transaction(async (t) => {
+            const snap = await t.get(boardRef);
+
+            if (!snap.exists()) { throw new Error('Column not found!'); }
+
+            const currentCards = snap.data() as BoardData;
+
+            const { updatedOriginColumn, updatedTargetColumn } = callback(currentCards);
+
+            t.update(boardRef, {
+                [`cards.${targetColumn}`]: updatedTargetColumn,
+                [`cards.${originColumn}`]: updatedOriginColumn,
+            });
+        });
+    }
+
     async insertCard(boardId: string, data: CardData) {
         return this.db.insert<CardData, BoardData>({
             data,
@@ -66,27 +111,19 @@ export default class Board {
     async reorderCards({ card, boardId, position }: ReorderCards) {
         const { getRef, transaction } = await this.db.transaction1<CardData>();
 
-        const columnRef = getRef({ path: Board.PATH, pathSegments: [boardId] });
+        const boardRef = getRef({ path: Board.PATH, pathSegments: [boardId] });
 
         return transaction(async (t) => {
-            const snap = await t.get(columnRef);
+            const snap = await t.get(boardRef);
             const column = slug(card.column);
 
             if (!snap.exists()) { throw new Error('Column not found!'); }
 
             const currentCards = snap.data() as BoardData;
-            const currentColumnCards = currentCards.cards[column];
-            const currentIndex = currentColumnCards.findIndex(({ id }) => id === card.id);
 
-            const indexToInsert = position > currentIndex ? position - 1 : position;
+            const newColumnCards = _generateNewOrderedColumn(currentCards.cards[column], card, position);
 
-            // Remove old card
-            const newColumnCards = currentColumnCards.filter(({ id }) => id !== card.id);
-
-            // Add new card
-            newColumnCards.splice(indexToInsert, 0, card);
-
-            t.update(columnRef, {
+            t.update(boardRef, {
                 [`cards.${column}`]: newColumnCards,
             });
         });
