@@ -6,9 +6,10 @@ import { useSnackbar } from 'notistack';
 import log from '@/utils/log';
 import useFilter from '@/hooks/useFilter';
 import { removeDuplicate } from '@/utils/array';
+import type { BoardData } from '@/services/board';
 import type { TeamPopulated } from '@/services/team';
-import { defaultTemplate } from '@/services/template';
-import { teamServices, userServices, templateServices } from '@/services/core';
+import { standardTemplate } from '@/services/template';
+import { teamServices, userServices, templateServices, boardServices } from '@/services/core';
 
 interface TeamsContextConfig {
     loading: boolean;
@@ -25,22 +26,20 @@ interface TeamsContextConfig {
     updateTeams: (teams: Array<TeamPopulated>) => void;
     acceptInvite: (teamId: string) => Promise<void>;
     addTeam: (name: string, email: string) => Promise<void>;
+    addTeamBoard: (teamId: string, data: Omit<BoardData, 'id' | 'createdAt' | 'status'>) => Promise<void>;
 }
 
 export const TeamsContext = createContext<TeamsContextConfig>({
     loading: true,
     myTeams: [],
     selectedTeam: {} as TeamPopulated,
-    filter: {
-        filtered: [],
-        reset: () => null,
-        do: () => null,
-    },
+    filter: { filtered: [], reset: () => null, do: () => null },
     updateTeam: () => null,
     updateTeams: () => null,
     updateTeamStatus: () => null,
     changeSelected: () => undefined,
     addTeam: () => new Promise(() => null),
+    addTeamBoard: () => new Promise(() => null),
     acceptInvite: () => new Promise(() => null),
 });
 
@@ -68,6 +67,7 @@ export default function TeamsProvider({ children }: TeamsProviderProps) {
         updateTeam: (team) => setMyTeams(myTeams.map(t => t.id === team.id ? team : t)),
         updateTeamStatus: (team) => updateTeamStatus(team),
         changeSelected: (team) => setSelectedTeam(team),
+        addTeamBoard: (teamId, data) => addTeamBoard(teamId, data),
     }), [myTeams, filtered, selectedTeam, loading]);
 
     useEffect(() => { getTeams(); }, []);
@@ -90,6 +90,17 @@ export default function TeamsProvider({ children }: TeamsProviderProps) {
             .finally(() => setTimeout(() => { setLoading(false); }, 500));
     };
 
+    const addTeamBoard = async (teamId: string, data: Omit<BoardData, 'id' | 'createdAt' | 'status'>) => {
+        return boardServices.createTeamBoard({ ...data, teamId })
+            .then(r => {
+                navigate(`board/${r.id}`);
+                enqueueSnackbar('Quadro criado com sucesso!', { variant: 'success' });
+            })
+            .catch(() => {
+                enqueueSnackbar('Oops! Tivemos um problema ao criar o quadro', { variant: 'error' });
+            });
+    };
+
     const addTeam = async (name: string, email: string) => {
         return teamServices.createTeam({ name, admin: email, members: [email] })
             .then(newTeam => {
@@ -103,7 +114,7 @@ export default function TeamsProvider({ children }: TeamsProviderProps) {
                     state: 'active',
                     admin: userServices.current,
                     members: [userServices.current],
-                    defaultTemplate: defaultTemplate(id)
+                    defaultTemplate: standardTemplate(id)
                 }]);
             })
             .catch(() => {

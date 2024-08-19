@@ -18,7 +18,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import DeleteIcon from '@mui/icons-material/Delete';
 
 import TabPage from '@/layout/TabPage';
-import { defaultTemplate } from '@/services/template';
+import { standardTemplate } from '@/services/template';
 import Form, { Control, FormControl, useForm } from '@/components/Form';
 
 import useTeams from '../../useTeams';
@@ -135,7 +135,7 @@ function DefaultBoardTeamplateConfig() {
             .finally(() => setTimeout(() => { setLoading(false); }, 500));
     };
 
-    const template = team.defaultTemplate || defaultTemplate(team.id);
+    const template = team.defaultTemplate || standardTemplate(team.id);
 
     const templateFormGroup = useTemplateForm(template, submit);
 

@@ -1,23 +1,32 @@
+import { Children, cloneElement, forwardRef, HtmlHTMLAttributes, ReactElement, useState } from 'react';
+
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Grid from '@mui/material/Grid';
 import Chip from '@mui/material/Chip';
 import Zoom from '@mui/material/Zoom';
 import Stack from '@mui/material/Stack';
+import Slide from '@mui/material/Slide';
+import Dialog from '@mui/material/Dialog';
 import Avatar from '@mui/material/Avatar';
 import { styled } from '@mui/material/styles';
 import CardMedia from '@mui/material/CardMedia';
 import Typography from '@mui/material/Typography';
 import CardContent from '@mui/material/CardContent';
 import AvatarGroup from '@mui/material/AvatarGroup';
+import DialogTitle from '@mui/material/DialogTitle';
 import CardActionArea from '@mui/material/CardActionArea';
+import { TransitionProps } from '@mui/material/transitions';
 
+import AddIcon from '@mui/icons-material/Add';
 import ViewAgendaIcon from '@mui/icons-material/ViewAgenda';
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 
 import Page from '@/layout/Page';
+import useModal from '@/hooks/useModal';
+import DefaultRetroImg from '@/assets/home/template_retro.png';
 
-import hotTemplates, { type HotTemplates, State } from './hot-templates';
+import HotTemplates, { type HotTamplateName } from './hot-templates';
 
 const CustomContentCard = styled(CardContent)(({ theme }) => ({
     '&.MuiCardContent-root': {
@@ -29,7 +38,37 @@ const CustomContentCard = styled(CardContent)(({ theme }) => ({
     },
 }));
 
-function TemplateCards(template: HotTemplates<State>) {
+const Transition = forwardRef(function Transition(
+    props: TransitionProps & {
+        children: React.ReactElement<any, any>;
+    },
+    ref: React.Ref<unknown>,
+) {
+    return <Slide direction="up" ref={ref} {...props} />;
+});
+
+interface TemplateConfigDialogProps { hotTemplate: HotTamplateName; open: boolean; onClose: () => void; }
+function TemplateConfigDialog({ open, hotTemplate, onClose }: TemplateConfigDialogProps) {
+    return (
+        <Dialog
+            fullWidth
+            keepMounted
+            open={open}
+            maxWidth="sm"
+            onClose={onClose}
+            TransitionComponent={Transition}
+        >
+            <DialogTitle>Sobre esse template</DialogTitle>
+            {HotTemplates[hotTemplate]({ onClose })}
+        </Dialog>
+    );
+}
+
+interface TemplateCardProps extends HtmlHTMLAttributes<HTMLElement> {
+    name: string;
+    children: React.JSX.Element;
+}
+function TemplateCard({ children, name, ...props }: TemplateCardProps) {
     return (
         <Stack spacing={1} sx={{ display: 'block', height: '100%' }}>
             <Card
@@ -41,34 +80,36 @@ function TemplateCards(template: HotTemplates<State>) {
                         ? `1px solid ${palette.grey[300]}`
                         : `1px solid ${palette.grey[800]}`
                 }}
+                {...props}
             >
                 <CardActionArea sx={{ height: '100%' }}>
-                    {
-                        template.state === 'new'
-                            ? <CustomContentCard>
-                                {template.icon}
-                            </CustomContentCard>
-                            : <CardContent sx={{
-                                backgroundColor: (theme) => theme.palette.background.default,
-                            }}>
-                                <CardMedia
-                                    component="img"
-                                    image={template.img}
-                                    alt={template.name}
-
-                                />
-                            </CardContent>
-                    }
+                    {children}
                 </CardActionArea>
             </Card>
-            <Typography variant="caption">
-                {template.name}
-            </Typography>
+            <Typography variant="caption">{name}</Typography>
         </Stack>
     );
 }
 
-function CreateRetroCard() {
+interface CreateRetroCardProps { children: React.ReactNode; }
+function CreateRetroCard({ children }: CreateRetroCardProps) {
+    const arrayChildren = Children.toArray(children) as ReactElement<TemplateCardProps>[];
+
+    const renderChildren = () => {
+        return arrayChildren.map((child, index) => {
+            return (
+                <Zoom
+                    in
+                    key={index}
+                    style={{ transitionDelay: `${100 * (index + 1)}ms` }}
+                >
+                    <Grid item xs={2}>
+                        {cloneElement(child)}
+                    </Grid>
+                </Zoom>
+            );
+        });
+    };
 
     return (
         <Stack spacing={2}>
@@ -83,25 +124,18 @@ function CreateRetroCard() {
                         Templates recomendados
                     </Typography>
                     <Box>
-                        <Grid container spacing={2}>
-                            {
-                                hotTemplates.map((ht, index) => (
-                                    <Zoom
-                                        in
-                                        key={ht.name}
-                                        style={{ transitionDelay: `${100 * (index + 1)}ms` }}
-                                    >
-                                        <Grid key={ht.name} item xs={6} md={4} lg={3}>
-                                            <TemplateCards {...ht} />
-                                        </Grid>
-                                    </Zoom>
-                                ))
-                            }
+                        <Grid container spacing={2} sx={{
+                            flexWrap: 'nowrap',
+                            overflowX: 'auto',
+                            overflowY: 'hidden',
+                            paddingBottom: 2
+                        }}>
+                            {renderChildren()}
                         </Grid>
                     </Box>
                 </CardContent>
             </Card>
-        </Stack>
+        </Stack >
     );
 }
 
@@ -190,10 +224,41 @@ function RecentRetros() {
 }
 
 export default function Dashboard() {
+    const [openBoardModal, toggleBoardModal] = useModal();
+    const [chosenTemplate, setChosenTemplate] = useState<HotTamplateName>('Standard');
+
+    const createNewRetro = () => {
+        setChosenTemplate('Standard');
+        toggleBoardModal();
+    };
+    const createDefaultRetro = () => {
+        setChosenTemplate('TruthsAndLies');
+        toggleBoardModal();
+    };
+
     return (
         <Page>
-            <CreateRetroCard />
+            <CreateRetroCard>
+                <TemplateCard name="Nova retrô" onClick={createNewRetro}>
+                    <CustomContentCard>
+                        <AddIcon color="inherit" sx={{ fontSize: 40 }} />
+                    </CustomContentCard>
+                </TemplateCard>
+                <TemplateCard name="Retrô padrão" onClick={createDefaultRetro}>
+                    <CardMedia
+                        component="img"
+                        alt="Retrô Padrão"
+                        image={DefaultRetroImg}
+                    />
+                </TemplateCard>
+            </CreateRetroCard>
             <RecentRetros />
-        </Page>
+
+            <TemplateConfigDialog
+                open={openBoardModal}
+                onClose={toggleBoardModal}
+                hotTemplate={chosenTemplate}
+            />
+        </Page >
     );
 }

@@ -44,7 +44,7 @@ export default function TeamDetails() {
             title={loading.details ? '' : team.name}
         >
             <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                <Tabs value={page}>
+                <Tabs value={page} textColor="secondary" indicatorColor="secondary">
                     <Tab
                         label="Retrôs"
                         iconPosition="start"

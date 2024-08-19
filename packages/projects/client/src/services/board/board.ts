@@ -1,6 +1,5 @@
 import DB from '@/services/db';
 import { uuid } from '@/utils/uuid';
-import { slug } from '@/utils/string';
 
 import type { BoardData, CardData } from './interface';
 
@@ -33,7 +32,9 @@ export default class Board {
         const id = uuid();
         const status = 'active';
         const createdAt = new Date().toISOString();
-        const cards = Object.fromEntries(data.template.columns.map(column => [slug(column), []]));
+        const cards = Object.fromEntries(data.template.columns.map(column =>
+            [column.slug, data.cards[column.slug] || []]
+        ));
 
         return this.db.setItem<BoardData>({
             path: Board.PATH,
@@ -54,7 +55,7 @@ export default class Board {
         { column, boardId }: Omit<MethodPattern, 'card'>,
         callback: (b: BoardData) => CardData[]
     ): Promise<void> {
-        const { getRef, transaction } = await this.db.transaction1<CardData>();
+        const { getRef, transaction } = await this.db.transaction<CardData>();
 
         const columnRef = getRef({ path: Board.PATH, pathSegments: [boardId] });
 
@@ -77,7 +78,7 @@ export default class Board {
         { targetColumn, originColumn, boardId }: { targetColumn: string; originColumn: string; boardId: string },
         callback: (b: BoardData) => { updatedOriginColumn: CardData[], updatedTargetColumn: CardData[] }
     ): Promise<void> {
-        const { getRef, transaction } = await this.db.transaction1<CardData>();
+        const { getRef, transaction } = await this.db.transaction<CardData>();
 
         const boardRef = getRef({ path: Board.PATH, pathSegments: [boardId] });
 
@@ -102,7 +103,7 @@ export default class Board {
             data,
             path: Board.PATH,
             pathSegments: [boardId],
-            pathData: `cards.${slug(data.column)}`,
+            pathData: `cards.${data.column}`,
         });
     }
 

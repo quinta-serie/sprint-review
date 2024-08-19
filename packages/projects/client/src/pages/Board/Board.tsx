@@ -30,7 +30,6 @@ import ControlPointIcon from '@mui/icons-material/ControlPoint';
 
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 
-import { slug } from '@/utils/string';
 import useModal from '@/hooks/useModal';
 import { addMinutes } from '@/utils/time';
 import { boardServices, url } from '@/services/core';
@@ -134,8 +133,8 @@ function MergeConfirmationDialog({ origin, target, open, onClose }: MergeConfirm
                 Tem certeza que deseja juntar os cards?
             </DialogContent>
             <DialogActions>
-                <Button color="primary" variant="contained" onClick={onClose}>Não, deixa como está!</Button>
-                <Button color="secondary" variant="contained" onClick={handleMerge}>Sim, Juntar!</Button>
+                <Button color="inherit" variant="outlined" onClick={onClose}>Não, deixa como está!</Button>
+                <Button color="primary" variant="contained" onClick={handleMerge}>Sim, Juntar!</Button>
             </DialogActions>
         </Dialog>
     );
@@ -188,10 +187,10 @@ function Columns() {
                     <Grid
                         item
                         width="100%"
-                        key={column}
+                        key={column.slug}
                         md={lengthGrids}
                     >
-                        <Typography variant="h6" color="text.primary" gutterBottom>{column}</Typography>
+                        <Typography variant="h6" color="text.primary" gutterBottom>{column.name}</Typography>
                         <Stack direction="column" spacing={1}>
                             <Button
                                 fullWidth
@@ -206,14 +205,14 @@ function Columns() {
                             >
                                 <ControlPointIcon />
                             </Button>
-                            <Droppable droppableId={column} isCombineEnabled>
+                            <Droppable droppableId={column.slug} isCombineEnabled>
                                 {(provided) => (
                                     <Stack direction="column" spacing={1}
                                         ref={provided.innerRef}
                                         {...provided.droppableProps}
                                         sx={{ minHeight: 'calc(100vh - 350px)' }}
                                     >
-                                        <ListCards column={slug(column)} />
+                                        <ListCards column={column.slug} />
                                         {provided.placeholder}
                                     </Stack>
                                 )}
@@ -351,11 +350,11 @@ export default function Board() {
         const { droppableId } = result.source;
         const column = result.destination?.droppableId as string;
 
-        const origin = board.cards[slug(droppableId)].find(card => card.id === result.draggableId) as CardData;
+        const origin = board.cards[droppableId].find(card => card.id === result.draggableId) as CardData;
 
         // Dropping in another card
         if (result.combine) {
-            const target = board.cards[slug(result.combine?.droppableId)]
+            const target = board.cards[result.combine.droppableId]
                 .find(card => card.id === result.combine?.draggableId) as CardData;
 
             setCardsReference({ origin, target });
@@ -378,7 +377,7 @@ export default function Board() {
             changeCardColumn({
                 originCard: origin,
                 position: result.destination.index,
-                columnTargetSlug: slug(result.destination.droppableId),
+                columnTargetSlug: result.destination.droppableId,
             });
         }
     };

@@ -20,6 +20,8 @@ import AddIcon from '@mui/icons-material/Add';
 import InfoIcon from '@mui/icons-material/Info';
 import TimerIcon from '@mui/icons-material/Timer';
 
+import { slug } from '@/utils/string';
+import { COLORS } from '@/services/template';
 import Form, { Control, FormGroup } from '@/components/Form';
 
 import type { TemplateFormData } from './interface';
@@ -28,7 +30,15 @@ function InputColumns({ formGroup }: { formGroup: FormGroup<TemplateFormData> })
     const [input, setInput] = useState('');
 
     const addColumn = () => {
-        formGroup.setValues({ columns: [...formGroup.controls.columns.value, input] });
+        const lastIndexColumn = formGroup.controls.columns.value.length;
+
+        formGroup.setValues({
+            columns: [...formGroup.controls.columns.value, {
+                name: input,
+                slug: slug(input),
+                color: COLORS[lastIndexColumn]
+            }]
+        });
 
         setInput('');
     };
@@ -64,9 +74,9 @@ function InputColumns({ formGroup }: { formGroup: FormGroup<TemplateFormData> })
             <Box>
                 {
                     formGroup.controls.columns.value.map((column, index) => (
-                        <Zoom in key={index}>
+                        <Zoom in key={column.slug}>
                             <Chip
-                                label={column}
+                                label={column.name}
                                 variant="outlined"
                                 sx={{ mr: 2, mb: 2 }}
                                 avatar={<Avatar>{index + 1}</Avatar>}
@@ -201,6 +211,19 @@ export default function TemplateForm({
                                     controlName="hideCardsAutor"
                                 >
                                     <Switch checked={formGroup.controls.hideCardsAutor.value} />
+                                </Control>
+                            }
+                        />
+                        <FormControlLabel
+                            label="Ocultar reações"
+                            sx={{ color: 'text.primary' }}
+                            control={
+                                <Control
+                                    type="checkbox"
+                                    action="onChange"
+                                    controlName="hideReactions"
+                                >
+                                    <Switch checked={formGroup.controls.hideReactions.value} />
                                 </Control>
                             }
                         />

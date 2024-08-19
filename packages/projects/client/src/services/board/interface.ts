@@ -7,13 +7,11 @@ export interface BoardData {
     ownerId: string;
     createdAt: string;
     description: string;
-    timer?: {
-        isRunning: boolean;
-        expiryDate?: string;
-    }
-    cards: { [x: string]: CardData[] };
-    template: TemplateData;
+    reactions: string[];
+    timer?: { isRunning: boolean; expiryDate?: string; }
     status: 'active' | 'archived';
+    template: TemplateData;
+    cards: { [x: string]: CardData[] };
 }
 
 export type BoardDataConfig =
@@ -29,4 +27,7 @@ export interface CardData {
     };
     column: string;
     whoLiked: string[];
+    reactions: {
+        [x: string]: string[];
+    };
 }

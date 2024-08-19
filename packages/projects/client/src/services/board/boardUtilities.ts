@@ -3,8 +3,6 @@ import type { BoardData, CardData } from './interface';
 export function _generateNewOrderedColumn(column: BoardData['cards'][string], card: CardData, position: number) {
     const currentIndex = column.findIndex(({ id }) => id === card.id);
 
-    console.log({ currentIndex, position });
-
     const indexToInsert = position > currentIndex ? position + 1 : position;
 
     // Remove old card
@@ -21,8 +19,6 @@ export function _changeCardColumn({ origin, target, position }: {
     origin: { card: CardData, column: BoardData['cards'][string]; }
     target: { color: string, column: BoardData['cards'][string]; slug: string; },
 }) {
-    console.log({ origin, target });
-
     const columnOriginWithoutOrigin = origin.column
         .filter(card => card.id !== origin.card.id);
 
@@ -101,4 +97,30 @@ export function _mergeCardsInDiferentColumns({ origin, target }: {
         updatedColumnTarget: columnWithMergedTarget,
         updatedColumnOrigin: columnOriginWithoutOrigin,
     };
+}
+
+export function _addReaction(column: BoardData['cards'][string], id: string, reaction: string, email: string) {
+    return column
+        .map(card => {
+            if (card.id !== id) { return card; }
+
+            if (!card.reactions[reaction]) { card.reactions[reaction] = []; }
+
+            card.reactions[reaction].push(email);
+
+            return card;
+        });
+}
+
+export function _removeReaction(column: BoardData['cards'][string], id: string, reaction: string, email: string) {
+    return column
+        .map(card => {
+            if (card.id !== id) { return card; }
+
+            const index = card.reactions[reaction].findIndex(e => e === email);
+
+            card.reactions[reaction].splice(index, 1);
+
+            return card;
+        });
 }

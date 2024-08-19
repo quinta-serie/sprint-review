@@ -33,7 +33,7 @@ export const truthsAndLiesTemplate = (teamId: string): TemplateData => ({
     isDefault: true,
     maxVotesPerCard: 3,
     maxVotesPerUser: 5,
-    hideReactions: true,
+    hideReactions: false,
     hideCardsAutor: true,
     hideCardsInitially: true,
 });

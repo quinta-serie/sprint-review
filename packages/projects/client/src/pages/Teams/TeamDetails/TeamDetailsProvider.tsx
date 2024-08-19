@@ -7,7 +7,7 @@ import type { UserData } from '@/services/user';
 import type { BoardData } from '@/services/board';
 import type { InviteData } from '@/services/invite';
 import type { TeamData, TeamPopulated } from '@/services/team';
-import { defaultTemplate, TemplateWithEditableData, type TemplateData } from '@/services/template';
+import { standardTemplate, TemplateWithEditableData, type TemplateData } from '@/services/template';
 import { userServices, teamServices, boardServices, inviteServices, templateServices } from '@/services/core';
 
 import useTeams from '../useTeams';
@@ -47,7 +47,7 @@ const defaultTeam: TeamPopulated = {
     members: [],
     state: 'active',
     admin: defaultUser,
-    defaultTemplate: defaultTemplate('')
+    defaultTemplate: standardTemplate('')
 };
 
 export const TeamDetailsContext = createContext<TeamDetailsContextConfig>({

@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 import { useSnackbar, OptionsObject } from 'notistack';
 
 import Box from '@mui/material/Box';
+import Chip from '@mui/material/Chip';
 import Menu from '@mui/material/Menu';
 import Card from '@mui/material/Card';
 import Zoom from '@mui/material/Zoom';
@@ -17,11 +18,14 @@ import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import CardContent from '@mui/material/CardContent';
 import CardActions from '@mui/material/CardActions';
+import Grid from '@mui/material/Grid';
 
+import FaceIcon from '@mui/icons-material/Face';
 import EditIcon from '@mui/icons-material/Edit';
 import CloseIcon from '@mui/icons-material/Close';
 import DeleteIcon from '@mui/icons-material/Delete';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
+import AddReactionIcon from '@mui/icons-material/AddReaction';
 import ThumbUpOutlinedIcon from '@mui/icons-material/ThumbUpOutlined';
 
 import useMenu from '@/hooks/useMenu';
@@ -103,8 +107,7 @@ function Header({ isCardOwner, hideCardsAutor, ...cardData }: HeaderProps) {
                                 }}
                             />
                             <Typography variant="body2" color="white">
-                                {/* {owner.name} */}
-                                {cardData.id.split('-')[4]}
+                                {owner.name}
                             </Typography>
                         </Stack>
                     )
@@ -136,7 +139,7 @@ function Footer({ id, whoLiked, column }: FooterProps) {
     const { board } = useBoard();
     const { enqueueSnackbar } = useSnackbar();
     const { favoriteCard, unFavoriteCard } = useBoard();
-    const { maxVotesPerCard, maxVotesPerUser, } = board.template;
+    const { maxVotesPerCard, maxVotesPerUser } = board.template;
 
     const { email } = userServices.current;
 
@@ -259,35 +262,97 @@ function FakeMessage({ text }: Pick<CardData, 'text'>) {
 }
 
 export default function BoadCard(data: CardData) {
-    const { board } = useBoard();
+    const { board, manageReaction: addReaction } = useBoard();
+    const { anchorEl, handleClose, handleOpen, open } = useMenu();
 
-    const { id, color, text, whoLiked, column, owner } = data;
+    const { id, color, text, whoLiked, column, owner, reactions } = data;
 
-    const { hideCardsAutor, hideCardsInitially } = board.template;
+    const { hideCardsAutor, hideCardsInitially, hideReactions } = board.template;
 
     const isCardOwner = userServices.current.user_id === owner.id;
+    const isSprintReviewOwner = owner.id === 'sprint-review';
 
     const buildMessage = text.replace(/\/n/g, '\n');
 
+    const _addReaction = (reaction: string) => {
+        addReaction({ card: data, reaction });
+        handleClose();
+    };
+
     return (
-        <Card sx={{ bgcolor: color, color: (theme) => theme.palette.common.white }}>
-            {
-                (isCardOwner || !hideCardsAutor) && (
-                    <Header
-                        {...data}
-                        isCardOwner={isCardOwner}
-                        hideCardsAutor={hideCardsAutor}
-                    />
-                )
-            }
-            <CardContent sx={{
-                wordBreak: 'break-all',
-                whiteSpace: 'pre-wrap',
-            }}>
-                {hideCardsInitially && !isCardOwner ? <FakeMessage text={text} /> : buildMessage}
-            </CardContent>
-            <Divider />
-            <Footer id={id} column={column} whoLiked={whoLiked} />
-        </Card>
+        <Stack spacing={1}>
+            <Card sx={{ bgcolor: color, color: (theme) => theme.palette.common.white }}>
+                {
+                    (isCardOwner || !hideCardsAutor || isSprintReviewOwner) && (
+                        <Header
+                            {...data}
+                            isCardOwner={isCardOwner}
+                            hideCardsAutor={hideCardsAutor && !isSprintReviewOwner}
+                        />
+                    )
+                }
+                <CardContent sx={{ wordBreak: 'break-all', whiteSpace: 'pre-wrap' }}>
+                    {(hideCardsInitially && !isCardOwner) && !isSprintReviewOwner
+                        ? <FakeMessage text={text} />
+                        : buildMessage
+                    }
+                </CardContent>
+                <Divider />
+                <Footer id={id} column={column} whoLiked={whoLiked} />
+            </Card>
+            <Stack spacing={1} direction="row" justifyContent="flex-end">
+                {
+                    !hideReactions && (
+                        <>
+                            {
+                                Object.entries(reactions)
+                                    .sort(([a], [b]) => a.localeCompare(b))
+                                    .map(([key, arr]) => {
+                                        const isReactionUsed = arr.includes(userServices.current.email);
+
+                                        return Boolean(arr.length) && <Chip
+                                            key={key}
+                                            size="small"
+                                            variant="outlined"
+                                            label={arr.length}
+                                            onClick={() => _addReaction(key)}
+                                            icon={<span style={{ fontSize: 14 }}>{key}</span>}
+                                            sx={{ borderColor: isReactionUsed ? 'primary.main' : 'transparent' }}
+                                        />;
+                                    })
+                            }
+                            <IconButton onClick={handleOpen} size="small">
+                                <AddReactionIcon fontSize="inherit" />
+                            </IconButton>
+                            <Menu
+                                open={open}
+                                elevation={1}
+                                anchorEl={anchorEl}
+                                onClose={handleClose}
+                                anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+                                transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+                            >
+                                <Box width={100}>
+                                    <Grid container>
+                                        {
+                                            board.reactions.map(reaction =>
+                                                <Grid item key={reaction} xs={4}>
+                                                    <IconButton
+                                                        size="small"
+                                                        onClick={() => _addReaction(reaction)}
+                                                    >
+                                                        {reaction}
+                                                    </IconButton>
+                                                </Grid>
+                                            )
+                                        }
+                                    </Grid>
+                                </Box>
+                            </Menu>
+                        </>
+                    )
+                }
+            </Stack>
+        </Stack >
     );
 }

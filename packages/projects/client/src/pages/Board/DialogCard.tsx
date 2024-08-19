@@ -18,7 +18,6 @@ import type { TransitionProps } from '@mui/material/transitions';
 import MoodIcon from '@mui/icons-material/Mood';
 
 import { uuid } from '@/utils/uuid';
-import { COLORS } from '@/services/template';
 import { userServices } from '@/services/core';
 import type { CardData } from '@/services/board';
 import Form, { useForm, FormControl, Control } from '@/components/Form';
@@ -86,8 +85,8 @@ export default function DialogCardText({ open, action, index, card, onClose }: D
 
     const { user_id, name } = userServices.current;
 
-    const currentColor = index !== undefined ? COLORS[index] : card?.color as string;
-    const column = index !== undefined ? board.template.columns[index] : card?.column as string;
+    const currentColor = index !== undefined ? board.template.columns[index].color : card?.color as string;
+    const column = index !== undefined ? board.template.columns[index].slug : card?.column as string;
 
     const [formGroup] = useForm<AddCardForm>({
         form: {
@@ -108,6 +107,7 @@ export default function DialogCardText({ open, action, index, card, onClose }: D
                         column,
                         id: uuid(),
                         whoLiked: [],
+                        reactions: {},
                         text: buildText,
                         owner: { id: user_id, name }
                     }).finally(() => { handleClose(); });

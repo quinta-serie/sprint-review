@@ -10,8 +10,6 @@ class Timer {
     }
 
     public resume(callback: () => void, delay: number) {
-        console.log('remaining', this);
-        console.log('start', this.start);
         this.remaining = delay;
         this.start = new Date();
         this.timerId = window.setTimeout(() => {

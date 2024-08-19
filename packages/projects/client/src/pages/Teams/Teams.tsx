@@ -83,7 +83,7 @@ function Content({ onOpenCreateModal }: ContentProps) {
                                 key={team.id}
                                 style={{ transitionDelay: `${100 * (index + 1)}ms` }}
                             >
-                                <Grid item xs={12} md={6} lg={4}>
+                                <Grid item xs={12} md={4}>
                                     <TeamCard {...team} />
                                 </Grid>
                             </Zoom>

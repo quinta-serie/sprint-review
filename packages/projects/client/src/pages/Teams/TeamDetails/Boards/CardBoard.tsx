@@ -96,7 +96,7 @@ export function CardBoard(board: BoardData) {
             <CardActions sx={{ display: 'flex', justifyContent: 'flex-end' }}>
                 <Button
                     size="small"
-                    color="primary"
+                    color="inherit"
                     variant="outlined"
                     onClick={goTo}
                 >

@@ -28,11 +28,11 @@ import ArchiveIcon from '@mui/icons-material/Archive';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 
 import TabPage from '@/layout/TabPage';
-import { userServices } from '@/services/core';
-import { defaultTemplate, TemplateData } from '@/services/template';
-import Form, { useForm, Control, FormControl } from '@/components/Form';
-import type { BoardData } from '@/services/board';
 import useFilter from '@/hooks/useFilter';
+import { userServices } from '@/services/core';
+import { standardReactions, type BoardData } from '@/services/board';
+import { standardTemplate, TemplateData } from '@/services/template';
+import Form, { useForm, Control, FormControl } from '@/components/Form';
 
 import { CardBoard } from './CardBoard';
 import useTeamDetails from '../useTeamDetails';
@@ -197,7 +197,7 @@ function CreateBoardModal({ open, onClose }: CreateBoardModalProps) {
 
     const user = userServices.current;
 
-    const templateFormGroup = useTemplateForm(defaultTemplate(team.id));
+    const templateFormGroup = useTemplateForm(standardTemplate(team.id));
 
     const [formGroup] = useForm<CreateBoardForm>({
         form: {
@@ -217,11 +217,10 @@ function CreateBoardModal({ open, onClose }: CreateBoardModalProps) {
                     ? templateFormGroup.values
                     : templates.find(t => t.id === form.values.template) as TemplateData;
 
-                console.log({ template });
-
                 createTeamBoard({
                     name,
                     cards: {},
+                    reactions: standardReactions,
                     teamId: team.id,
                     ownerId: user.user_id,
                     description: form.values.description,
@@ -277,7 +276,7 @@ function CreateBoardModal({ open, onClose }: CreateBoardModalProps) {
                             <Control controlName="template" action="onChange">
                                 <Select
                                     label="Template"
-                                    defaultValue={formGroup.controls.template.value}
+                                    value={formGroup.controls.template.value}
                                 >
                                     {
                                         templates.map(template => (

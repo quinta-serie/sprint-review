@@ -91,27 +91,7 @@ export default class DB {
             });
     }
 
-    public transaction<F extends Field, Segment extends F[keyof F]>({
-        path,
-        callback,
-        pathSegments
-    }: CollectionWithCallback<F, Segment>) {
-        const ref = doc(this.db, path, ...pathSegments);
-
-        return runTransaction(this.db, async (transaction) => {
-            const doc = await transaction.get(ref);
-
-            if (!doc.exists()) { throw new Error('Column not found!'); }
-
-            const result = callback(doc.data() as Segment);
-
-            console.log('result', result);
-
-            // transaction.update(ref, result);
-        });
-    }
-
-    public async transaction1<F extends Field>() {
+    public async transaction<F extends Field>() {
         const getRef = ({ path, pathSegments }: CollectionWithOnlyPaths<F>) => doc(this.db, path, ...pathSegments);
 
         const transaction = async (callback: (t: Transaction) => void) => {
