@@ -44,6 +44,7 @@ function Log<T,>({ formGroup }: Readonly<{ formGroup: FormGroup<T> }>) {
         padding: 15,
         borderRadius: 4,
         overflow: 'auto',
+        color: '#333',
         background: '#e5e5e5',
         boxShadow: '0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24)',
     };
