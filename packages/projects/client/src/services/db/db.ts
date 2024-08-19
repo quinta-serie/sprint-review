@@ -40,9 +40,6 @@ type CollectionWithData<F extends Field> = Omit<CollectionData<F>, 'filters' | '
 type CollectionWithFilters<F extends Field> = Omit<CollectionData<F>, 'data' | 'pathData' | 'callback'>;
 type CollectionWithOnlyPaths<F extends Field> = Omit<CollectionData<F>, 'data' | 'filters' | 'pathData' | 'callback'>;
 type CollectionWithPathData<F extends Field, S extends F[keyof F]> = Omit<CollectionData<F, S>, 'filters' | 'callback'>;
-type CollectionWithCallback<F extends Field, S extends F[keyof F]> = Omit<CollectionData<F, S>,
-    'data' | 'filters' | 'pathData'
->;
 
 export default class DB {
     constructor(private db: Firestore) { }

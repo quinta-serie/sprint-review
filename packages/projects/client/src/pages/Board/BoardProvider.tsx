@@ -326,7 +326,7 @@ export default function BoardProvider({ children }: BoardProviderProps) {
                 updatedOriginColumn: updatedColumnOrigin,
                 updatedTargetColumn: updatedColumnTarget,
             };
-        }).catch((e) => {
+        }).catch(() => {
             setBoard(prev => ({
                 ...prev, cards: {
                     ...prev.cards,
