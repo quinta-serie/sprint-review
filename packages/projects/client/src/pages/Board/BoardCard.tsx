@@ -103,8 +103,8 @@ function Header({ isCardOwner, hideCardsAutor, ...cardData }: HeaderProps) {
                                 }}
                             />
                             <Typography variant="body2" color="white">
-                                {owner.name}
-                                {/* {cardData.id.split('-')[4]} */}
+                                {/* {owner.name} */}
+                                {cardData.id.split('-')[4]}
                             </Typography>
                         </Stack>
                     )

@@ -3,6 +3,7 @@ import { createContext, useMemo, useState } from 'react';
 import { slug } from '@/utils/string';
 import { wait } from '@/utils/promise';
 import { deepCopy } from '@/utils/object';
+import { COLORS } from '@/services/template';
 import { defaultTemplate } from '@/services/template';
 import { boardServices, userServices } from '@/services/core';
 import type { BoardData, BoardDataConfig, CardData } from '@/services/board';
@@ -10,6 +11,7 @@ import {
     _editCard,
     _favoriteCard,
     _unFavoriteCard,
+    _changeCardColumn,
     _generateNewOrderedColumn,
     _mergeCardInTheSameColumn,
     _mergeCardsInDiferentColumns,
@@ -23,15 +25,16 @@ interface BoardContextConfig {
     isOwner: boolean;
     removeTimer: () => Promise<void>;
     addCard: (card: CardData) => Promise<void>;
-    deleteCard: (cardId: string, columCard: string) => Promise<void>;
     getBoardDetails: (boardId: string) => Promise<void>;
     loadBoard: (fn: (data: BoardData) => BoardData) => void;
     mergeCards: (origin: CardData, target: CardData) => void;
     favoriteCard: (dataCard: FavoriteCardData) => Promise<void>;
     unFavoriteCard: (dataCard: FavoriteCardData) => Promise<void>;
+    deleteCard: (cardId: string, columCard: string) => Promise<void>;
     updateTemplateConfig: (template: BoardDataConfig) => Promise<void>;
+    reorderCard: (originCard: CardData, position: number) => Promise<void>;
     editCardText: (cardId: string, cardColumn: string, text: string) => Promise<void>;
-    reorderCard: (originCard: CardData, position: number) => void;
+    changeCardColumn: (data: { originCard: CardData, columnTargetSlug: string, position: number }) => void;
 }
 
 const defaultBoard: BoardData = {
@@ -51,12 +54,13 @@ export const BoardContext = createContext<BoardContextConfig>({
     board: defaultBoard,
     loading: false,
     isOwner: false,
-    mergeCards: () => null,
     loadBoard: () => defaultBoard,
-    reorderCard: () => null,
+    mergeCards: () => null,
+    changeCardColumn: () => null,
     addCard: () => new Promise(() => null),
     deleteCard: () => new Promise(() => null),
     removeTimer: () => new Promise(() => null),
+    reorderCard: () => new Promise(() => null),
     favoriteCard: () => new Promise(() => null),
     editCardText: () => new Promise(() => null),
     unFavoriteCard: () => new Promise(() => null),
@@ -86,6 +90,8 @@ export default function BoardProvider({ children }: BoardProviderProps) {
         unFavoriteCard: ({ id, column }) => unFavoriteCard({ id, column }),
         updateTemplateConfig: (template) => updateTemplateConfig(template),
         editCardText: (cardId, cardColumn, text) => editCardText(cardId, cardColumn, text),
+        changeCardColumn: ({ originCard, columnTargetSlug, position }) =>
+            changeCardColumn({ originCard, columnTargetSlug, position }),
     }), [board, loading]);
 
     const getBoardDetails = async (boardId: string) => {
@@ -184,6 +190,32 @@ export default function BoardProvider({ children }: BoardProviderProps) {
         });
     };
 
+    const removeTimer = async () => {
+        return boardServices.updateBoard({
+            ...board,
+            timer: {
+                isRunning: false,
+                expiryDate: '',
+            },
+        }).catch(() => setBoard(prev => ({ ...prev })));
+    };
+
+    const reorderCard = async (originCard: CardData, position: number) => {
+        const columnSlug = slug(originCard.column);
+
+        const cardsFallback = deepCopy(board.cards[columnSlug]);
+
+        const newColumnCards = _generateNewOrderedColumn(board.cards[columnSlug], originCard, position);
+
+        setBoard(prev => ({ ...prev, cards: { ...prev.cards, [columnSlug]: newColumnCards } }));
+
+        return boardServices.updateBoardColumn({ column: columnSlug, boardId: board.id }, (b) => {
+            return _generateNewOrderedColumn(b.cards[columnSlug], originCard, position);
+        }).catch(() =>
+            setBoard(prev => ({ ...prev, cards: { ...prev.cards, [columnSlug]: cardsFallback } }))
+        );
+    };
+
     const mergeCards = async (origin: CardData, target: CardData) => {
         const columnOriginSlug = slug(origin.column);
         const columnTargetSlug = slug(target.column);
@@ -217,7 +249,7 @@ export default function BoardProvider({ children }: BoardProviderProps) {
                 }
             }));
 
-            boardServices.mergeCardsInDiferentColumns({
+            boardServices.updateBoardMultipleColumns({
                 boardId: board.id,
                 originColumn: columnOriginSlug,
                 targetColumn: columnTargetSlug
@@ -243,30 +275,64 @@ export default function BoardProvider({ children }: BoardProviderProps) {
         }
     };
 
-    const removeTimer = async () => {
-        return boardServices.updateBoard({
-            ...board,
-            timer: {
-                isRunning: false,
-                expiryDate: '',
+    const changeCardColumn = async ({
+        position, originCard, columnTargetSlug
+    }: { originCard: CardData, columnTargetSlug: string, position: number }) => {
+        const columnOriginSlug = slug(originCard.column);
+
+        const columnIndex = board.template.columns.findIndex(column => slug(column) === columnTargetSlug);
+
+        const cardsOriginFallback = deepCopy(board.cards[columnOriginSlug]);
+        const cardsTargetFallback = deepCopy(board.cards[columnTargetSlug]);
+
+        const { updatedColumnOrigin, updatedColumnTarget } = _changeCardColumn({
+            position,
+            origin: { card: originCard, column: board.cards[columnOriginSlug] },
+            target: {
+                color: COLORS[columnIndex],
+                slug: board.template.columns[columnIndex],
+                column: board.cards[columnTargetSlug],
             },
-        }).catch(() => setBoard(prev => ({ ...prev })));
-    };
+        });
 
-    const reorderCard = async (originCard: CardData, position: number) => {
-        const column = slug(originCard.column);
+        setBoard(prev => ({
+            ...prev,
+            cards: {
+                ...prev.cards,
+                [columnOriginSlug]: updatedColumnOrigin,
+                [columnTargetSlug]: updatedColumnTarget,
+            }
+        }));
 
-        const cardsFallback = deepCopy(board.cards[column]);
+        boardServices.updateBoardMultipleColumns({
+            boardId: board.id,
+            originColumn: columnOriginSlug,
+            targetColumn: columnTargetSlug
+        }, (b) => {
+            const { updatedColumnOrigin, updatedColumnTarget } = _changeCardColumn({
+                position,
+                origin: { card: originCard, column: b.cards[columnOriginSlug] },
+                target: {
+                    color: COLORS[columnIndex],
+                    column: b.cards[columnTargetSlug],
+                    slug: b.template.columns[columnIndex],
+                },
+            });
 
-        const newColumnCards = _generateNewOrderedColumn(board.cards[column], originCard, position);
-
-        setBoard(prev => ({ ...prev, cards: { ...prev.cards, [column]: newColumnCards } }));
-
-        boardServices.reorderCards({ card: originCard, boardId: board.id, position })
-            .then((res) => console.log('reorderCard', res))
-            .catch(() =>
-                setBoard(prev => ({ ...prev, cards: { ...prev.cards, [column]: cardsFallback } }))
-            );
+            return {
+                updatedOriginColumn: updatedColumnOrigin,
+                updatedTargetColumn: updatedColumnTarget,
+            };
+        }).catch((e) => {
+            console.log(e);
+            setBoard(prev => ({
+                ...prev, cards: {
+                    ...prev.cards,
+                    [columnOriginSlug]: cardsOriginFallback,
+                    [columnTargetSlug]: cardsTargetFallback
+                }
+            }));
+        });
     };
 
     return (

@@ -18,8 +18,9 @@ import type { TransitionProps } from '@mui/material/transitions';
 import MoodIcon from '@mui/icons-material/Mood';
 
 import { uuid } from '@/utils/uuid';
-import { CardData } from '@/services/board';
-import { COLORS, userServices } from '@/services/core';
+import { COLORS } from '@/services/template';
+import { userServices } from '@/services/core';
+import type { CardData } from '@/services/board';
 import Form, { useForm, FormControl, Control } from '@/components/Form';
 
 import useBoard from './useBoard';

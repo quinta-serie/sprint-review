@@ -3,10 +3,8 @@ import { uuid } from '@/utils/uuid';
 import { slug } from '@/utils/string';
 
 import type { BoardData, CardData } from './interface';
-import { _generateNewOrderedColumn } from './boardUtilities';
 
 type MethodPattern = { card: CardData; boardId: string; column: string; }
-type ReorderCards = Omit<MethodPattern, 'column'> & { position: number; };
 
 export default class Board {
     private static PATH = 'boards';
@@ -75,7 +73,7 @@ export default class Board {
         });
     }
 
-    async mergeCardsInDiferentColumns(
+    async updateBoardMultipleColumns(
         { targetColumn, originColumn, boardId }: { targetColumn: string; originColumn: string; boardId: string },
         callback: (b: BoardData) => { updatedOriginColumn: CardData[], updatedTargetColumn: CardData[] }
     ): Promise<void> {
@@ -105,27 +103,6 @@ export default class Board {
             path: Board.PATH,
             pathSegments: [boardId],
             pathData: `cards.${slug(data.column)}`,
-        });
-    }
-
-    async reorderCards({ card, boardId, position }: ReorderCards) {
-        const { getRef, transaction } = await this.db.transaction1<CardData>();
-
-        const boardRef = getRef({ path: Board.PATH, pathSegments: [boardId] });
-
-        return transaction(async (t) => {
-            const snap = await t.get(boardRef);
-            const column = slug(card.column);
-
-            if (!snap.exists()) { throw new Error('Column not found!'); }
-
-            const currentCards = snap.data() as BoardData;
-
-            const newColumnCards = _generateNewOrderedColumn(currentCards.cards[column], card, position);
-
-            t.update(boardRef, {
-                [`cards.${column}`]: newColumnCards,
-            });
         });
     }
 

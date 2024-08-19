@@ -16,8 +16,6 @@ export const url = {
     origin: window.location.origin
 };
 
-export const COLORS = ['#2C4AC9', '#FF772A', '#A63EB9', '#009886'];
-
 // FIREBASE
 const app = initializeApp({
     appId: import.meta.env.VITE_ID,

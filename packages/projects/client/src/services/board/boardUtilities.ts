@@ -3,7 +3,9 @@ import type { BoardData, CardData } from './interface';
 export function _generateNewOrderedColumn(column: BoardData['cards'][string], card: CardData, position: number) {
     const currentIndex = column.findIndex(({ id }) => id === card.id);
 
-    const indexToInsert = position > currentIndex ? position - 1 : position;
+    console.log({ currentIndex, position });
+
+    const indexToInsert = position > currentIndex ? position + 1 : position;
 
     // Remove old card
     const newColumnCards = column.filter(({ id }) => id !== card.id);
@@ -12,6 +14,24 @@ export function _generateNewOrderedColumn(column: BoardData['cards'][string], ca
     newColumnCards.splice(indexToInsert, 0, card);
 
     return newColumnCards;
+}
+
+export function _changeCardColumn({ origin, target, position }: {
+    position: number,
+    origin: { card: CardData, column: BoardData['cards'][string]; }
+    target: { color: string, column: BoardData['cards'][string]; slug: string; },
+}) {
+    console.log({ origin, target });
+
+    const columnOriginWithoutOrigin = origin.column
+        .filter(card => card.id !== origin.card.id);
+
+    target.column.splice(position, 0, { ...origin.card, color: target.color, column: target.slug });
+
+    return {
+        updatedColumnTarget: target.column,
+        updatedColumnOrigin: columnOriginWithoutOrigin,
+    };
 }
 
 export function _favoriteCard(column: BoardData['cards'][string], cardId: string, email: string) {

@@ -232,12 +232,14 @@ function Content() {
     const { board, removeTimer, isOwner } = useBoard();
 
     const { seconds, minutes, hours, pause, restart, isRunning } = useTimer({
-        expiryTimestamp: new Date(board.timer?.expiryDate || ''),
+        expiryTimestamp: board.timer?.expiryDate ? new Date(board.timer?.expiryDate) : new Date(),
         onExpire: () => {
             removeTimer()
                 .then(() => {
-                    enqueueSnackbar('Tempo esgotado!', { variant: 'info' });
-                    new Audio(AlertBell).play();
+                    if (board.timer?.isRunning) {
+                        enqueueSnackbar('Tempo esgotado!', { variant: 'info' });
+                        new Audio(AlertBell).play();
+                    }
                 });
         }
     });
@@ -253,7 +255,12 @@ function Content() {
 
     const inviteLink = `${url.origin}/board/${board.id}`;
 
-    useEffect(() => { restart(new Date(board.timer?.expiryDate || ''), true); }, [board]);
+    useEffect(() => {
+        restart(
+            board.timer?.expiryDate ? new Date(board.timer?.expiryDate) : new Date(),
+            true
+        );
+    }, [board]);
 
     const copyBoardLink = () => {
         copy(inviteLink);
@@ -326,7 +333,7 @@ export default function Board() {
     const { boardId } = useParams<{ boardId: string; }>();
     const [open, setOpen] = useState(false);
     const [cardsReference, setCardsReference] = useState<{ origin: CardData; target: CardData }>();
-    const { board, loading, getBoardDetails, loadBoard, reorderCard } = useBoard();
+    const { board, loading, getBoardDetails, loadBoard, reorderCard, changeCardColumn } = useBoard();
 
     useEffect(() => { getBoardDetails(boardId as string); }, []);
 
@@ -367,7 +374,13 @@ export default function Board() {
         if (origin.column === column) { reorderCard(origin, result.destination.index); }
 
         // Dropping in the other column
-        if (origin.column !== column) { console.log('OTHER', result); }
+        if (origin.column !== column) {
+            changeCardColumn({
+                originCard: origin,
+                position: result.destination.index,
+                columnTargetSlug: slug(result.destination.droppableId),
+            });
+        }
     };
 
     return (
