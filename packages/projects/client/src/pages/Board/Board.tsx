@@ -35,7 +35,7 @@ import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 
 import useModal from '@/hooks/useModal';
-import { addMinutes, removeMinutes } from '@/utils/time';
+import { addMinutes } from '@/utils/time';
 import { boardServices, url } from '@/services/core';
 import AlertBell from '@/assets/audio/bell-alert.mp3';
 import type { BoardData, CardData } from '@/services/board';
