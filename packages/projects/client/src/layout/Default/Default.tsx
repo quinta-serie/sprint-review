@@ -271,8 +271,8 @@ export default function Default({ children }: IProps) {
                         />
                     </Box>
                     <ButtonList list={BUTTONS.main} />
-                    <Divider />
-                    <ButtonList list={BUTTONS.support} />
+                    {/* <Divider />
+                    <ButtonList list={BUTTONS.support} /> */}
                 </nav>
                 <nav aria-label="secondary navigation options">
                     <Divider />

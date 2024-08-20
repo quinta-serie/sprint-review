@@ -139,7 +139,7 @@ function CreateRetroCard({ children }: CreateRetroCardProps) {
     );
 }
 
-function RecentRetros() {
+export function RecentRetros() {
     return (
         <Stack spacing={2}>
             <Typography variant="h5" color="text.primary">Retrôs recentes</Typography>
@@ -252,7 +252,7 @@ export default function Dashboard() {
                     />
                 </TemplateCard>
             </CreateRetroCard>
-            <RecentRetros />
+            {/* <RecentRetros /> */}
 
             <TemplateConfigDialog
                 open={openBoardModal}
