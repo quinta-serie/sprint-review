@@ -7,6 +7,7 @@ import Stack from '@mui/material/Stack';
 import Slider from '@mui/material/Slider';
 import Switch from '@mui/material/Switch';
 import Avatar from '@mui/material/Avatar';
+import Tooltip from '@mui/material/Tooltip';
 import TextField from '@mui/material/TextField';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
@@ -14,11 +15,9 @@ import MuiFormGroup from '@mui/material/FormGroup';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import InputAdornment from '@mui/material/InputAdornment';
 import FormControlLabel from '@mui/material/FormControlLabel';
-import Tooltip from '@mui/material/Tooltip';
 
 import AddIcon from '@mui/icons-material/Add';
 import InfoIcon from '@mui/icons-material/Info';
-import TimerIcon from '@mui/icons-material/Timer';
 
 import { slug } from '@/utils/string';
 import { COLORS } from '@/services/template';
@@ -30,6 +29,8 @@ function InputColumns({ formGroup }: { formGroup: FormGroup<TemplateFormData> })
     const [input, setInput] = useState('');
 
     const addColumn = () => {
+        if (!input) { return; }
+
         const lastIndexColumn = formGroup.controls.columns.value.length;
 
         formGroup.setValues({
@@ -74,7 +75,7 @@ function InputColumns({ formGroup }: { formGroup: FormGroup<TemplateFormData> })
             <Box>
                 {
                     formGroup.controls.columns.value.map((column, index) => (
-                        <Zoom in key={column.slug}>
+                        <Zoom in key={index}>
                             <Chip
                                 label={column.name}
                                 variant="outlined"
@@ -99,7 +100,6 @@ function InputColumns({ formGroup }: { formGroup: FormGroup<TemplateFormData> })
 
 interface TemplateFormProps {
     shouldOmitName?: boolean;
-    shouldOmitTimer?: boolean;
     shouldOmitColumns?: boolean;
     children?: React.JSX.Element;
     formGroup: FormGroup<TemplateFormData>;
@@ -108,7 +108,6 @@ export default function TemplateForm({
     children,
     formGroup,
     shouldOmitName = false,
-    shouldOmitTimer = true,
     shouldOmitColumns = false,
 }: TemplateFormProps) {
     return (
@@ -229,36 +228,6 @@ export default function TemplateForm({
                         />
                     </MuiFormGroup>
                 </Box>
-
-                {
-                    !shouldOmitTimer && (
-                        <Box>
-                            <Typography variant="body2" mb={2}>Contador regressivo</Typography>
-                            <Stack direction="row" spacing={1} alignItems="center">
-                                <TimerIcon sx={{ color: 'text.primary' }} />
-                                <Control controlName="timer">
-                                    <TextField
-                                        size="small"
-                                        variant="outlined"
-                                        sx={{ width: '50px' }}
-                                        value={formGroup.controls.timer.value}
-                                        error={formGroup.controls.timer.isInvalid}
-                                        helperText={
-                                            formGroup.controls.timer.isInvalid && formGroup.controls.timer.error
-                                        }
-                                    />
-                                </Control>
-                                <Typography variant="subtitle2" color="text.primary">Minutos</Typography>
-                                <Tooltip
-                                    placement="right"
-                                    title="Ao adicionar um novo valor seu contador ativo será resetado"
-                                >
-                                    <InfoIcon />
-                                </Tooltip>
-                            </Stack>
-                        </Box>
-                    )
-                }
 
                 {!shouldOmitColumns && <InputColumns formGroup={formGroup} />}
 

@@ -172,7 +172,7 @@ function RecentRetros() {
                                         >
                                             Sprint 6
                                         </Typography>
-                                        <AvatarGroup max={4} >
+                                        <AvatarGroup max={4}>
                                             <Avatar
                                                 alt="Remy Sharp"
                                                 src="https://mui.com/static/images/avatar/1.jpg"

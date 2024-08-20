@@ -1,5 +1,7 @@
 import { forwardRef, useEffect, useState } from 'react';
 
+import { useSnackbar } from 'notistack';
+
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
@@ -32,13 +34,13 @@ import useFilter from '@/hooks/useFilter';
 import { userServices } from '@/services/core';
 import { standardReactions, type BoardData } from '@/services/board';
 import { standardTemplate, TemplateData } from '@/services/template';
-import Form, { useForm, Control, FormControl } from '@/components/Form';
+import Form, { useForm, Control, FormControl, FormGroup } from '@/components/Form';
 
 import { CardBoard } from './CardBoard';
 import useTeamDetails from '../useTeamDetails';
-import TemplateForm, { useTemplateForm } from '../../TemplateForm';
+import TemplateForm, { TemplateFormData, useTemplateForm } from '../../TemplateForm';
 
-interface CreateBoardForm { name: string; template: string; description: string; }
+interface CreateBoardForm { name: string; template: string; description: string; config: FormGroup<TemplateFormData>; }
 
 const Transition = forwardRef(function Transition(
     props: TransitionProps & {
@@ -192,6 +194,7 @@ function Content() {
 
 interface CreateBoardModalProps { open: boolean; onClose: () => void; }
 function CreateBoardModal({ open, onClose }: CreateBoardModalProps) {
+    const { enqueueSnackbar } = useSnackbar();
     const [loading, setLoading] = useState(false);
     const { team, templates, createTeamBoard } = useTeamDetails();
 
@@ -204,26 +207,30 @@ function CreateBoardModal({ open, onClose }: CreateBoardModalProps) {
             name: new FormControl({ value: '', required: true }),
             description: new FormControl({ value: '' }),
             template: new FormControl({ value: team.defaultTemplate ? team.defaultTemplate.id : 'customizado' }),
+            config: new FormControl({ value: templateFormGroup, required: true }),
         },
         handle: {
             submit: (form) => {
-                if (!templateFormGroup.isValid) { return; }
+                const { config, name, description } = form.values;
+
+                if (config.values.columns.length > 4) {
+                    enqueueSnackbar('O template não pode ter mais de 4 colunas', { variant: 'error' });
+                    return;
+                }
 
                 setLoading(true);
 
-                const { name } = form.values;
-
                 const template = form.values.template === 'customizado'
-                    ? templateFormGroup.values
+                    ? config.values
                     : templates.find(t => t.id === form.values.template) as TemplateData;
 
                 createTeamBoard({
                     name,
+                    description,
                     cards: {},
                     reactions: standardReactions,
                     teamId: team.id,
                     ownerId: user.user_id,
-                    description: form.values.description,
                     template: { ...template, id: '', teamId: team.id, isDefault: false },
                 }).finally(() => {
                     setTimeout(() => {
@@ -242,6 +249,7 @@ function CreateBoardModal({ open, onClose }: CreateBoardModalProps) {
             open={open}
             maxWidth="sm"
             onClose={onClose}
+            scroll="body"
             TransitionComponent={Transition}
         >
             <DialogTitle>Crie seu board</DialogTitle>
@@ -266,6 +274,7 @@ function CreateBoardModal({ open, onClose }: CreateBoardModalProps) {
                                 label="Descrição"
                                 variant="outlined"
                                 error={formGroup.controls.description.isInvalid}
+                                value={formGroup.controls.description.value}
                                 helperText={
                                     formGroup.controls.description.isInvalid && formGroup.controls.description.error
                                 }

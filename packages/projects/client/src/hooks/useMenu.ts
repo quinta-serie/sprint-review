@@ -7,10 +7,15 @@ export default function useMenu() {
     const handleOpen = (event: React.MouseEvent<HTMLElement>) => { setAnchorEl(event.currentTarget); };
     const handleClose = () => { setAnchorEl(null); };
 
+    const handleToggle = (event?: React.MouseEvent<HTMLElement>) => {
+        !open && event ? handleOpen(event) : handleClose();
+    };
+
     return {
         open,
         anchorEl,
         handleOpen,
-        handleClose
+        handleClose,
+        handleToggle
     };
 }

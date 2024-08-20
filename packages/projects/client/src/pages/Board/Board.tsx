@@ -1,5 +1,5 @@
 import { useTimer } from 'react-timer-hook';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { forwardRef, useEffect, useState } from 'react';
 
 import copy from 'copy-to-clipboard';
@@ -21,20 +21,26 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import { TransitionProps } from '@mui/material/transitions';
 import CircularProgress from '@mui/material/CircularProgress';
+import Popover from '@mui/material/Popover';
+import TextField from '@mui/material/TextField';
 
+import InfoIcon from '@mui/icons-material/Info';
 import ShareIcon from '@mui/icons-material/Share';
 import TimerIcon from '@mui/icons-material/Timer';
 import CloseIcon from '@mui/icons-material/Close';
 import SettingsIcon from '@mui/icons-material/Settings';
 import ControlPointIcon from '@mui/icons-material/ControlPoint';
+import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 
 import useModal from '@/hooks/useModal';
-import { addMinutes } from '@/utils/time';
+import { addMinutes, removeMinutes } from '@/utils/time';
 import { boardServices, url } from '@/services/core';
 import AlertBell from '@/assets/audio/bell-alert.mp3';
 import type { BoardData, CardData } from '@/services/board';
+import useMenu from '@/hooks/useMenu';
+import Form, { Control, FormControl, useForm } from '@/components/Form';
 
 import useBoard from './useBoard';
 import BoadCard from './BoardCard';
@@ -95,9 +101,9 @@ function TemplateConfigDialog({ open, onClose }: TemplateConfigDialogProps) {
             onClose={onClose}
             TransitionComponent={Transition}
         >
-            <DialogTitle>Crie seu board</DialogTitle>
+            <DialogTitle>Editar configuração</DialogTitle>
             <DialogContent>
-                <TemplateForm shouldOmitName shouldOmitColumns shouldOmitTimer={false} formGroup={templateFormGroup}>
+                <TemplateForm shouldOmitName shouldOmitColumns formGroup={templateFormGroup}>
                     <Stack direction="row" spacing={2} justifyContent="flex-end">
                         <Button variant="outlined" color="primary" onClick={onClose}>Cancelar</Button>
                         <Button type="submit" variant="contained" color="secondary">Salvar</Button>
@@ -226,19 +232,79 @@ function Columns() {
     );
 }
 
+interface TimerMenuProps { onClose: () => void; }
+function TimerMenu({ onClose }: TimerMenuProps) {
+    const { board, updateTemplateConfig } = useBoard();
+
+    const [formGroup] = useForm<{ timer: number }>({
+        form: {
+            timer: new FormControl({ value: 0, required: true })
+        },
+        handle: {
+            submit: (form) => {
+                const { timer } = form.values;
+
+                let expiryDate = '';
+
+                if (timer) { expiryDate = addMinutes(new Date(), timer).toISOString(); }
+
+                updateTemplateConfig({
+                    ...board.template,
+                    timer: { isRunning: !!timer, expiryDate }
+                }).finally(onClose);
+            }
+        }
+    }, []);
+
+    return (
+        <Box sx={{ p: 2 }}>
+            <Form formGroup={formGroup}>
+                <Stack spacing={1}>
+                    <Typography variant="body2">Contador regressivo</Typography>
+                    <Stack direction="row" spacing={1} alignItems="center">
+                        <TimerIcon sx={{ color: 'text.primary' }} />
+                        <Control controlName="timer">
+                            <TextField
+                                size="small"
+                                variant="outlined"
+                                sx={{ width: '50px' }}
+                                value={formGroup.controls.timer.value}
+                                error={formGroup.controls.timer.isInvalid}
+                                helperText={
+                                    formGroup.controls.timer.isInvalid && formGroup.controls.timer.error
+                                }
+                            />
+                        </Control>
+                        <Typography variant="subtitle2" color="text.primary">Minutos</Typography>
+                        <Tooltip
+                            placement="right"
+                            title="Ao adicionar um novo valor seu contador ativo será resetado"
+                        >
+                            <InfoIcon />
+                        </Tooltip>
+                    </Stack>
+
+                    <Button type="submit" variant="contained" color="primary" fullWidth>Iniciar</Button>
+                </Stack>
+            </Form>
+        </Box>
+    );
+}
+
 function Content() {
+    const navigate = useNavigate();
     const { enqueueSnackbar } = useSnackbar();
     const { board, removeTimer, isOwner } = useBoard();
+    const { open, anchorEl, handleOpen, handleClose } = useMenu();
 
     const { seconds, minutes, hours, pause, restart, isRunning } = useTimer({
         expiryTimestamp: board.timer?.expiryDate ? new Date(board.timer?.expiryDate) : new Date(),
+        autoStart: false,
         onExpire: () => {
             removeTimer()
                 .then(() => {
-                    if (board.timer?.isRunning) {
-                        enqueueSnackbar('Tempo esgotado!', { variant: 'info' });
-                        new Audio(AlertBell).play();
-                    }
+                    enqueueSnackbar('Tempo esgotado!', { variant: 'info' });
+                    new Audio(AlertBell).play();
                 });
         }
     });
@@ -255,10 +321,7 @@ function Content() {
     const inviteLink = `${url.origin}/board/${board.id}`;
 
     useEffect(() => {
-        restart(
-            board.timer?.expiryDate ? new Date(board.timer?.expiryDate) : new Date(),
-            true
-        );
+        if (board.timer?.expiryDate) { restart(new Date(board.timer?.expiryDate), true); }
     }, [board]);
 
     const copyBoardLink = () => {
@@ -273,10 +336,15 @@ function Content() {
         });
     };
 
+    const goToBoards = () => { navigate(`/teams/${board.teamId}/boards`); };
+
     return (
         <Stack spacing={2} >
             <Stack direction="row" justifyContent="space-between" sx={{ minHeight: 40 }}>
                 <Stack direction="row" spacing={1} alignItems="center">
+                    <IconButton size="small" onClick={goToBoards}>
+                        <ArrowBackIosNewIcon />
+                    </IconButton>
                     <Typography variant="h5" color="text.primary">{board.name}</Typography>
                     <Chip
                         size="small"
@@ -297,7 +365,6 @@ function Content() {
                                     </Tooltip>
                                 )
                             }
-                            <TimerIcon sx={{ color: 'text.primary' }} />
                             <Typography variant="h6" color="text.primary">
                                 {hours.toString().padStart(2, '0')}:
                                 {minutes.toString().padStart(2, '0')}:
@@ -314,9 +381,23 @@ function Content() {
                 </IconButton>
                 {
                     isOwner && (
-                        <IconButton onClick={toggleTemplateModal} >
-                            <SettingsIcon />
-                        </IconButton>
+                        <>
+                            <IconButton aria-describedby="timer" onClick={handleOpen} >
+                                <TimerIcon />
+                            </IconButton>
+                            <Popover
+                                id="timer"
+                                open={open}
+                                anchorEl={anchorEl}
+                                onClose={handleClose}
+                                anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+                            >
+                                <TimerMenu onClose={handleClose} />
+                            </Popover>
+                            <IconButton onClick={toggleTemplateModal} >
+                                <SettingsIcon />
+                            </IconButton>
+                        </>
                     )
                 }
             </Stack>

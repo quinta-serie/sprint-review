@@ -223,10 +223,12 @@ export default function Members() {
             <Stack spacing={2}>
                 <Form formGroup={formGroup}>
                     <MuiFormControl sx={{ width: '100%' }} variant="outlined">
-                        <InputLabel htmlFor="outlined-adornment-password">Busque pelo nome do usuário</InputLabel>
+                        <InputLabel htmlFor="outlined-adornment-password">
+                            Buscar membro do time pelo nome
+                        </InputLabel>
                         <Control controlName="name" action="onInput">
                             <OutlinedInput
-                                label="Busque pelo nome do usuário"
+                                label="Buscar membro do time pelo nome"
                                 placeholder="Ex: João das Neves"
                                 startAdornment={
                                     <InputAdornment position="start">

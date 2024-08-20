@@ -10,7 +10,7 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import LocalPostOfficeIcon from '@mui/icons-material/LocalPostOffice';
 
-import Page from '@/layout/Page';
+import Page, { BackLocationButton } from '@/layout/Page';
 
 import useTeamDetails from './useTeamDetails';
 
@@ -42,9 +42,10 @@ export default function TeamDetails() {
         <Page
             loading={loading.details}
             title={loading.details ? '' : team.name}
+            backButton={<BackLocationButton />}
         >
             <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                <Tabs value={page} textColor="secondary" indicatorColor="secondary">
+                <Tabs value={page}>
                     <Tab
                         label="Retrôs"
                         iconPosition="start"
