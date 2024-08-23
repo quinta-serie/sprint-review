@@ -4,6 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "start": "env-cmd -f .env vite --port 8000",
     "start:qa": "env-cmd -f .env.qa vite --port 8000",
     "start:prod": "env-cmd -f .env.prod vite --port 8000",
     "start:test": "env-cmd -f .env.test vite --port 8000",
