@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { forwardRef, useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 import Box from '@mui/material/Box';
@@ -19,6 +19,12 @@ import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import { useTheme, styled } from '@mui/material/styles';
 import ListItemButton from '@mui/material/ListItemButton';
+import { TransitionProps } from '@mui/material/transitions';
+import Slide from '@mui/material/Slide';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import { DialogContentText } from '@mui/material';
 
 import EmailIcon from '@mui/icons-material/Email';
 import ExpandLess from '@mui/icons-material/ExpandLess';
@@ -26,12 +32,14 @@ import ExpandMore from '@mui/icons-material/ExpandMore';
 import InventoryIcon from '@mui/icons-material/Inventory';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 
+import Pix from '@/assets/pix.png';
 import Logo from '@/components/Logo';
 import { auth } from '@/services/core';
 import { InviteData } from '@/services/invite';
 import { useToInvite } from '@/pages/ToInvite';
 import { removeDuplicate } from '@/utils/array';
 import { inviteServices, userServices } from '@/services/core';
+import useModal from '@/hooks/useModal';
 
 import { BUTTONS } from './const';
 import { IProps, IButton, IButtonDetail } from './interface';
@@ -66,6 +74,15 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
         },
     }),
 );
+
+const Transition = forwardRef(function Transition(
+    props: TransitionProps & {
+        children: React.ReactElement<any, any>;
+    },
+    ref: React.Ref<unknown>,
+) {
+    return <Slide direction="up" ref={ref} {...props} />;
+});
 
 const WithChildren = ({ btn, goTo }: IButtonDetail) => {
     const [expanded, setExpanded] = useState(btn.open);
@@ -134,7 +151,8 @@ const WithOutChildren = ({ btn, goTo, disablePadding = true }: IButtonDetail & {
     );
 };
 
-const ButtonList = ({ list, onOpenDialog }: { list: Array<IButton>; onOpenDialog?: () => void; }) => {
+interface ButtonListProps { list: Array<IButton>; onOpenDialog?: () => void; togglePixModal?: () => void; }
+const ButtonList = ({ list, onOpenDialog, togglePixModal }: ButtonListProps) => {
     const navigate = useNavigate();
 
     const goTo = (path: string, internal: boolean) => {
@@ -149,9 +167,14 @@ const ButtonList = ({ list, onOpenDialog }: { list: Array<IButton>; onOpenDialog
             return;
         }
 
+        if (path === 'pix' && togglePixModal) {
+            togglePixModal();
+            return;
+        }
+
         internal
             ? navigate(path, { replace: false })
-            : window.location.href = path;
+            : window.open(path, '_blank');
     };
 
     return (
@@ -163,9 +186,36 @@ const ButtonList = ({ list, onOpenDialog }: { list: Array<IButton>; onOpenDialog
                         : <WithOutChildren btn={btn} goTo={goTo} key={btn.label} />
                 ))
             }
-        </List >
+        </List>
     );
 };
+
+interface PixDialogProps { open: boolean; onClose: () => void; }
+function PixDialog({ onClose, open }: PixDialogProps) {
+    return (
+        <Dialog
+            fullWidth
+            keepMounted
+            open={open}
+            maxWidth="sm"
+            onClose={onClose}
+            TransitionComponent={Transition}
+        >
+            <DialogTitle>Pix:</DialogTitle>
+            <DialogContent>
+                <DialogContentText gutterBottom>
+                    {/* eslint-disable */}
+                    Se você acha esse aplicativo útil e deseja apoiar seu desenvolvimento contínuo, considere fazer uma contribuição.
+                    <br />
+                    O projeto é open source e sua ajuda é fundamental para melhorar e expandir suas funcionalidades.
+                    <br />
+                    {/* eslint-enable */}
+                </DialogContentText>
+                <img src={Pix} alt="" />
+            </DialogContent>
+        </Dialog>
+    );
+}
 
 interface MenuNotificationProps {
     open: boolean;
@@ -231,6 +281,7 @@ function MenuNotification({ anchorEl, open, invites, onClose, onDeleteInviteNoti
 
 export default function Default({ children }: IProps) {
     const navigate = useNavigate();
+    const [openPixModal, togglePixModal] = useModal();
     const [invites, setInvites] = useState<InviteData[]>([]);
     const { name, email, picture } = userServices.current;
 
@@ -253,8 +304,8 @@ export default function Default({ children }: IProps) {
 
     const handleDeleteInviteNotification = (id: string) => { setInvites(prev => prev.filter(i => i.id !== id)); };
 
-    const handleClick = (event: React.MouseEvent<HTMLElement>) => { setAnchorEl(event.currentTarget); };
     const handleClose = () => { setAnchorEl(null); };
+    const handleClick = (event: React.MouseEvent<HTMLElement>) => { setAnchorEl(event.currentTarget); };
 
     const goToProfile = () => { navigate('/my-account'); };
 
@@ -271,10 +322,9 @@ export default function Default({ children }: IProps) {
                         />
                     </Box>
                     <ButtonList list={BUTTONS.main} />
-                    {/* <Divider />
-                    <ButtonList list={BUTTONS.support} /> */}
                 </nav>
                 <nav aria-label="secondary navigation options">
+                    <ButtonList list={BUTTONS.ref} togglePixModal={togglePixModal} />
                     <Divider />
                     <ButtonList list={BUTTONS.end} />
                 </nav>
@@ -311,6 +361,7 @@ export default function Default({ children }: IProps) {
                     {children}
                 </Container>
             </Box>
+            <PixDialog open={openPixModal} onClose={togglePixModal} />
         </Box>
     );
 }

@@ -24,6 +24,7 @@ import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 
 import Page from '@/layout/Page';
 import useModal from '@/hooks/useModal';
+import ThruthOrLie from '@/assets/home/thruth-or-lie.png';
 import DefaultRetroImg from '@/assets/home/template_retro.png';
 
 import HotTemplates, { type HotTamplateName } from './hot-templates';
@@ -236,19 +237,31 @@ export default function Dashboard() {
         toggleBoardModal();
     };
 
+    const createGeneric = () => {
+        setChosenTemplate('Generic');
+        toggleBoardModal();
+    };
+
     return (
         <Page>
             <CreateRetroCard>
-                <TemplateCard name="Nova retrô" onClick={createNewRetro}>
+                <TemplateCard name="Nova retrô" onClick={createGeneric}>
                     <CustomContentCard>
                         <AddIcon color="inherit" sx={{ fontSize: 40 }} />
                     </CustomContentCard>
                 </TemplateCard>
-                <TemplateCard name="Retrô padrão" onClick={createDefaultRetro}>
+                <TemplateCard name="Retrô padrão" onClick={createNewRetro}>
                     <CardMedia
                         component="img"
-                        alt="Retrô Padrão"
+                        alt="Retrô padrão"
                         image={DefaultRetroImg}
+                    />
+                </TemplateCard>
+                <TemplateCard name="Verdade ou mentira" onClick={createDefaultRetro}>
+                    <CardMedia
+                        component="img"
+                        alt="Verdade ou mentira"
+                        image={ThruthOrLie}
                     />
                 </TemplateCard>
             </CreateRetroCard>
